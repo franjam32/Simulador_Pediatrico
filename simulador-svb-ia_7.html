@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador SVB Pediátrico — Escuela Infantil</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #080c14;
+  --bg2:       #0e1420;
+  --bg3:       #141d2e;
+  --bg4:       #1a2438;
+  --border:    #1e2d47;
+  --border2:   #2a3f60;
+  --text:      #dce8f5;
+  --text2:     #7a9abf;
+  --text3:     #3d5a7a;
+  --accent:    #00d4ff;
+  --accent2:   #0099cc;
+  --green:     #00e676;
+  --yellow:    #ffd740;
+  --orange:    #ff9100;
+  --red:       #ff4444;
+  --purple:    #b388ff;
+  --font-d:    'Barlow Condensed', sans-serif;
+  --font-b:    'IBM Plex Sans', sans-serif;
+  --font-m:    'IBM Plex Mono', monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;font-family:var(--font-b);border:none}
+a{color:var(--accent)}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ══════════════════════════════
+   HOME
+══════════════════════════════ */
+#screen-home{
+  background: radial-gradient(ellipse at 30% 0%, #0a1a3a 0%, var(--bg) 55%),
+              radial-gradient(ellipse at 80% 80%, #0d1f10 0%, transparent 50%);
+  align-items:center;justify-content:center;padding:24px;
+}
+.home-wrap{max-width:900px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.home-brand{grid-column:1/-1;text-align:center;margin-bottom:8px}
+.home-brand h1{font-family:var(--font-d);font-size:3rem;font-weight:800;letter-spacing:0.04em;color:var(--text);line-height:1}
+.home-brand h1 span{color:var(--accent)}
+.home-brand p{color:var(--text2);font-size:0.9rem;margin-top:8px;letter-spacing:0.04em}
+
+.sc-list{display:flex;flex-direction:column;gap:6px}
+.sc-item{
+  display:grid;grid-template-columns:28px auto 1fr auto;align-items:center;gap:10px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;cursor:pointer;transition:all 0.15s;
+}
+.sc-item:hover{border-color:var(--border2);background:var(--bg4);transform:translateX(3px)}
+.sc-item.sel{border-color:var(--accent2);background:rgba(0,153,204,0.08);box-shadow:0 0 0 1px var(--accent2)}
+.sc-num{font-family:var(--font-m);font-size:0.65rem;color:var(--text3);font-weight:600}
+.sc-ico{font-size:1.2rem;line-height:1}
+.sc-name{font-size:0.85rem;font-weight:500;color:var(--text)}
+.sc-sev{font-size:0.6rem;font-weight:700;letter-spacing:0.07em;padding:2px 7px;border-radius:3px}
+.sev-critica{background:rgba(255,68,68,.18);color:var(--red)}
+.sev-urgente{background:rgba(255,145,0,.18);color:var(--orange)}
+.sev-moderada{background:rgba(255,215,64,.18);color:var(--yellow)}
+
+.home-right{display:flex;flex-direction:column;gap:14px}
+.hpanel{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px}
+.hpanel-title{font-family:var(--font-d);font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.hpanel-title::before{content:'';display:block;width:3px;height:12px;background:var(--accent);border-radius:2px}
+.radio-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:border-color 0.15s;margin-bottom:5px}
+.radio-row:hover{border-color:var(--border2)}
+.radio-row input{accent-color:var(--accent);width:14px;height:14px}
+.radio-row span{font-size:0.82rem;color:var(--text)}
+.toggle-row{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;cursor:pointer;margin-bottom:6px}
+.toggle-row input{accent-color:var(--accent);width:15px;height:15px;margin-top:1px}
+.toggle-row span{font-size:0.82rem;color:var(--text);line-height:1.35}
+.toggle-row small{display:block;color:var(--text3);font-size:.68rem;margin-top:2px}
+.btn-go{
+  background:linear-gradient(135deg,#0077cc,#00aaee);
+  color:#fff;font-family:var(--font-d);font-size:1.15rem;font-weight:800;
+  letter-spacing:0.1em;text-transform:uppercase;padding:16px;
+  border-radius:8px;width:100%;border:1px solid rgba(0,212,255,0.3);
+  box-shadow:0 6px 30px rgba(0,120,200,0.4);transition:all 0.15s;
+}
+.btn-go:hover{background:linear-gradient(135deg,#0088dd,#00ccff);transform:translateY(-1px);box-shadow:0 8px 35px rgba(0,150,220,0.5)}
+.warn-box{background:rgba(255,145,0,0.06);border:1px solid rgba(255,145,0,0.25);border-radius:8px;padding:12px;font-size:0.74rem;color:var(--orange);line-height:1.6}
+
+/* ══════════════════════════════
+   SIMULACIÓN
+══════════════════════════════ */
+#screen-sim{background:var(--bg);flex-direction:column}
+
+.sim-topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:8px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;
+}
+.sim-title{font-family:var(--font-d);font-size:1.1rem;font-weight:700;letter-spacing:0.04em}
+.sim-badge{font-size:0.62rem;font-weight:700;letter-spacing:0.08em;padding:3px 9px;border-radius:4px}
+.sim-badge.critica{background:rgba(255,68,68,.18);color:var(--red);border:1px solid rgba(255,68,68,.3)}
+.sim-badge.urgente{background:rgba(255,145,0,.18);color:var(--orange);border:1px solid rgba(255,145,0,.3)}
+.sim-badge.moderada{background:rgba(255,215,64,.18);color:var(--yellow);border:1px solid rgba(255,215,64,.3)}
+.sim-spacer{flex:1}
+.timer{font-family:var(--font-m);font-size:1.3rem;font-weight:600;color:var(--accent);letter-spacing:0.1em}
+.timer.hot{color:var(--red);animation:blink 1s infinite}
+.timer.exam{color:var(--yellow)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.mode-chip{font-size:0.68rem;color:var(--purple);padding:3px 8px;background:rgba(179,136,255,.08);border:1px solid rgba(179,136,255,.28);border-radius:4px}
+.btn-fin{background:rgba(255,68,68,.12);color:var(--red);border:1px solid rgba(255,68,68,.3);padding:6px 16px;border-radius:6px;font-size:0.8rem;font-weight:600;transition:all .15s}
+.btn-fin:hover{background:rgba(255,68,68,.25)}
+.btn-audio{background:rgba(0,212,255,.08);color:var(--accent);border:1px solid rgba(0,212,255,.25);padding:6px 10px;border-radius:6px;font-size:0.78rem;font-weight:600;transition:all .15s}
+.btn-audio:hover{background:rgba(0,212,255,.16)}
+
+/* Layout cabina */
+.sim-body{flex:1;display:grid;grid-template-columns:1fr 380px;gap:0;overflow:hidden;min-height:0}
+
+/* Columna izquierda: escena + narrativa + acciones */
+.sim-left{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)}
+
+/* Imagen de escena */
+.scene-img-wrap{
+  flex-shrink:0;position:relative;overflow:hidden;
+  aspect-ratio:16/9;height:auto;min-height:320px;max-height:520px;background:var(--bg3);
+}
+.scene-svg{width:100%;height:100%;display:none}
+.scene-photo-bg{
+  position:absolute;inset:0;
+  background-image:var(--scene-photo);
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  filter:blur(18px) saturate(.9) contrast(1.05) brightness(.48);
+  transform:scale(1.08);
+  opacity:.9;
+}
+.scene-photo{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center;
+  filter:saturate(1.02) contrast(1.04) brightness(.92);
+}
+.scene-overlay{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(to bottom, rgba(8,12,20,.05) 0%, rgba(8,12,20,.10) 48%, var(--bg) 100%),
+    linear-gradient(to right, rgba(8,12,20,.18), transparent 20%, transparent 80%, rgba(8,12,20,.18));
+  pointer-events:none;
+}
+.scene-location-tag{
+  position:absolute;top:12px;left:12px;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);
+  border:1px solid var(--border2);border-radius:6px;
+  padding:4px 10px;font-size:0.72rem;color:var(--text2);
+  display:flex;align-items:center;gap:6px;
+}
+.scene-status-tag{
+  position:absolute;top:12px;right:12px;
+  padding:4px 12px;border-radius:6px;font-family:var(--font-d);font-size:0.78rem;font-weight:700;letter-spacing:0.06em;
+}
+
+/* Narrativa IA */
+.narrative-area{
+  flex-shrink:0;padding:16px 20px 12px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(to bottom, rgba(14,20,32,0.95), var(--bg));
+}
+.narrative-label{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;opacity:0.7}
+.narrative-text{font-size:0.88rem;line-height:1.65;color:var(--text2)}
+.narrative-text.typing::after{content:'▋';animation:blink .6s infinite;color:var(--accent);font-size:0.7rem}
+
+/* Evolución del paciente */
+.patient-strip{
+  flex-shrink:0;display:flex;gap:0;border-bottom:1px solid var(--border);
+}
+.pt-cell{flex:1;padding:8px 10px;border-right:1px solid var(--border);text-align:center}
+.pt-cell:last-child{border-right:none}
+.pt-cell-label{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:3px}
+.pt-cell-val{font-size:0.78rem;font-weight:600}
+.val-ok{color:var(--green)}
+.val-warn{color:var(--orange)}
+.val-crit{color:var(--red);animation:blink 1.5s infinite}
+.val-neutral{color:var(--text2)}
+
+/* Actividades breves */
+.activity-panel{
+  flex-shrink:0;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,rgba(0,212,255,.055),rgba(179,136,255,.035));
+  padding:12px 16px;
+}
+.activity-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.activity-title{font-family:var(--font-d);font-size:.76rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--accent)}
+.activity-score{font-family:var(--font-m);font-size:.72rem;color:var(--green);white-space:nowrap}
+.activity-prompt{font-size:.78rem;color:var(--text2);line-height:1.45;margin-bottom:9px}
+.activity-body{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.activity-chip,.activity-step,.activity-hotspot{
+  background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  border-radius:7px;padding:7px 10px;font-size:.76rem;line-height:1.25;transition:all .15s;
+}
+.activity-chip:hover,.activity-step:hover,.activity-hotspot:hover{border-color:var(--accent2);background:var(--bg4)}
+.activity-chip.picked,.activity-step.picked,.activity-hotspot.picked{border-color:var(--accent);background:rgba(0,212,255,.12)}
+.activity-step{display:grid;grid-template-columns:18px 1fr;gap:6px;text-align:left}
+.activity-step-order{font-family:var(--font-m);color:var(--accent);font-weight:600}
+.activity-meter{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 8px}
+.activity-meter button{width:26px;height:26px;border-radius:6px;background:var(--bg4);color:var(--text);border:1px solid var(--border2);font-weight:700}
+.activity-meter span{font-family:var(--font-m);min-width:64px;text-align:center;color:var(--accent)}
+.activity-check{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.3);border-radius:7px;padding:7px 12px;font-size:.76rem;font-weight:700}
+.activity-feedback{font-size:.76rem;color:var(--text2);line-height:1.4;min-height:18px;width:100%;margin-top:2px}
+.activity-feedback.good{color:var(--green)}
+.activity-feedback.bad{color:var(--orange)}
+
+/* Panel opciones */
+.options-area{flex:1;overflow-y:auto;padding:14px 16px 16px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.options-label{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.options-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.options-grid{display:flex;flex-direction:column;gap:7px}
+.opt-btn{
+  display:flex;align-items:flex-start;gap:10px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:11px 14px;text-align:left;transition:all .15s;cursor:pointer;width:100%;
+}
+.opt-btn:hover:not(:disabled){background:var(--bg4);border-color:var(--border2);transform:translateX(2px)}
+.opt-btn:disabled{opacity:.4;cursor:not-allowed}
+.opt-btn.selected{border-color:var(--accent2);background:rgba(0,153,204,0.08)}
+.opt-letter{
+  font-family:var(--font-m);font-size:0.72rem;font-weight:600;color:var(--accent);
+  min-width:20px;padding-top:1px;
+}
+.opt-text{font-size:0.83rem;line-height:1.4;color:var(--text)}
+.opt-loading{display:flex;align-items:center;gap:10px;padding:16px;color:var(--text2);font-size:0.82rem}
+.dots span{animation:dotpulse 1.2s infinite;display:inline-block}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotpulse{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* Columna derecha: log + estado */
+.sim-right{display:flex;flex-direction:column;overflow:hidden;background:var(--bg2)}
+.log-header{padding:10px 14px 6px;font-family:var(--font-d);font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);flex-shrink:0}
+.log-feed{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:5px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.log-entry{padding:7px 10px;border-radius:6px;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.log-step{font-size:0.72rem;font-weight:600;color:var(--text3);letter-spacing:0.04em;margin-bottom:2px;display:flex;justify-content:space-between}
+.log-decision{font-size:0.78rem;color:var(--text);line-height:1.4}
+.log-result{font-size:0.73rem;margin-top:3px;line-height:1.35}
+.le-ok{background:rgba(0,230,118,.05);border-left:2px solid var(--green)}
+.le-ok .log-result{color:rgba(0,230,118,.8)}
+.le-warn{background:rgba(255,215,64,.05);border-left:2px solid var(--yellow)}
+.le-warn .log-result{color:rgba(255,215,64,.85)}
+.le-error{background:rgba(255,68,68,.06);border-left:2px solid var(--red)}
+.le-error .log-result{color:rgba(255,100,100,.85)}
+.le-info{background:rgba(0,212,255,.04);border-left:2px solid var(--accent2)}
+.le-info .log-result{color:var(--text2)}
+
+/* Paso actual highlight */
+.step-indicator{
+  flex-shrink:0;padding:10px 14px;border-top:1px solid var(--border);
+  background:var(--bg3);display:flex;align-items:center;gap:10px;
+}
+.step-num{font-family:var(--font-m);font-size:0.7rem;color:var(--text3)}
+.step-progress{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.step-bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;transition:width .5s ease}
+.step-score{font-family:var(--font-m);font-size:0.9rem;font-weight:600;color:var(--green)}
+
+/* ══════════════════════════════
+   DEBRIEFING
+══════════════════════════════ */
+#screen-debrief{background:var(--bg);overflow-y:auto}
+.db-hero{
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  border-bottom:1px solid var(--border);
+  padding:28px 32px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+}
+.db-result-box{display:flex;flex-direction:column;gap:4px}
+.db-result-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3)}
+.db-result{font-family:var(--font-d);font-size:2rem;font-weight:800;letter-spacing:0.04em}
+.db-result.pass{color:var(--green)}
+.db-result.obs{color:var(--yellow)}
+.db-result.fail{color:var(--red)}
+.db-stats{display:flex;gap:24px;margin-left:auto}
+.db-stat{text-align:center}
+.db-stat-val{font-family:var(--font-m);font-size:1.6rem;font-weight:600;color:var(--accent);display:block}
+.db-stat-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3)}
+
+.db-body{max-width:1100px;margin:0 auto;padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.db-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px}
+.db-card.wide{grid-column:1/-1}
+.certificate-card{background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(0,230,118,.05));border:1px solid rgba(0,212,255,.28)}
+.cert-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.cert-field{background:rgba(8,12,20,.45);border:1px solid var(--border);border-radius:8px;padding:10px}
+.cert-label{font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:4px}
+.cert-value{font-size:.84rem;color:var(--text);font-weight:600;line-height:1.35}
+.db-card-title{font-family:var(--font-d);font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.db-card-title::before{content:'';display:block;width:3px;height:12px;background:var(--accent);border-radius:2px}
+
+/* Timeline de decisiones */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:grid;grid-template-columns:32px 1fr;gap:0;position:relative}
+.tl-item:not(:last-child) .tl-line{width:2px;background:var(--border);position:absolute;left:15px;top:32px;bottom:0}
+.tl-dot{width:32px;display:flex;flex-direction:column;align-items:center;gap:0;padding-top:8px;position:relative;z-index:1}
+.tl-circle{width:16px;height:16px;border-radius:50%;border:2px solid;flex-shrink:0}
+.tl-circle.ok{border-color:var(--green);background:rgba(0,230,118,.15)}
+.tl-circle.warn{border-color:var(--yellow);background:rgba(255,215,64,.15)}
+.tl-circle.error{border-color:var(--red);background:rgba(255,68,68,.15)}
+.tl-content{padding:6px 0 14px 10px}
+.tl-step-label{font-size:0.65rem;color:var(--text3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:3px}
+.tl-decision{font-size:0.82rem;color:var(--text);font-weight:500;margin-bottom:4px}
+.tl-feedback{font-size:0.78rem;color:var(--text2);line-height:1.5}
+.tl-score{font-family:var(--font-m);font-size:0.72rem;font-weight:600;margin-top:4px}
+.tl-score.pos{color:var(--green)}
+.tl-score.neg{color:var(--red)}
+
+/* Puntos debriefing */
+.db-q{padding:9px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;font-size:0.82rem;line-height:1.5}
+.db-q:last-child{border-bottom:none}
+.db-q-num{font-family:var(--font-m);font-size:0.7rem;color:var(--accent);min-width:22px;font-weight:600;padding-top:2px}
+
+/* Referencias */
+.ref-item{padding:8px 0;border-bottom:1px solid var(--border);font-size:0.76rem}
+.ref-item:last-child{border-bottom:none}
+.ref-item strong{color:var(--text);display:block;margin-bottom:2px}
+.ref-item span{color:var(--text3)}
+.ref-ok{display:inline-block;padding:1px 6px;background:rgba(0,230,118,.12);color:var(--green);border-radius:3px;font-size:0.6rem;font-weight:700;margin-left:6px}
+
+.db-actions{padding:16px 28px 28px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-db{padding:10px 22px;border-radius:7px;font-size:0.84rem;font-weight:600;transition:all .15s}
+.btn-db-p{background:var(--accent2);color:#fff;border:1px solid var(--accent)}
+.btn-db-p:hover{background:var(--accent)}
+.btn-db-s{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-db-s:hover{border-color:var(--border2);color:var(--text)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:10px 20px;font-size:0.82rem;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Responsive */
+@media(max-width:800px){
+  .sim-body{grid-template-columns:1fr}
+  .sim-right{max-height:220px;border-right:none;border-top:1px solid var(--border)}
+  .home-wrap{grid-template-columns:1fr}
+  .db-body{grid-template-columns:1fr}
+}
+
+
+/* Mobile / GitHub Pages responsive polish */
+@media(max-width:900px){
+  html{font-size:14px}
+  body{overflow-y:auto}
+  #screen-home{justify-content:flex-start;padding:16px;min-height:100dvh}
+  .home-wrap{grid-template-columns:1fr;gap:14px;max-width:620px}
+  .home-brand h1{font-size:2.4rem}
+  .sim-topbar{position:sticky;top:0;z-index:20;padding:8px 12px;gap:8px}
+  .sim-title{font-size:1rem;max-width:58vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .timer{font-size:1.05rem}
+  .btn-fin,.btn-audio{padding:6px 9px;font-size:.72rem}
+  .sim-body{display:block;overflow:visible;min-height:auto}
+  .sim-left{overflow:visible;border-right:none}
+  .scene-img-wrap{width:100%;aspect-ratio:16/9;height:auto;min-height:0;max-height:none}
+  .scene-photo{object-fit:cover}
+  .narrative-area{padding:14px 16px}
+  .narrative-text{font-size:.95rem;line-height:1.55}
+  .patient-strip{display:grid;grid-template-columns:1fr 1fr}
+  .pt-cell{border-bottom:1px solid var(--border);min-height:66px;display:flex;flex-direction:column;justify-content:center}
+  .activity-panel{padding:12px}
+  .activity-body{align-items:stretch}
+  .activity-chip,.activity-step,.activity-hotspot,.activity-check{min-height:44px}
+  .options-area{overflow:visible;padding:14px 12px 18px}
+  .opt-btn{min-height:58px;padding:13px 12px;border-radius:9px}
+  .opt-text{font-size:.93rem;line-height:1.38}
+  .sim-right{max-height:none;min-height:220px;border-top:1px solid var(--border)}
+  .log-feed{max-height:240px}
+  .db-hero{padding:20px 16px;align-items:flex-start}
+  .db-stats{width:100%;margin-left:0;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .db-body{grid-template-columns:1fr;padding:16px 12px;gap:12px}
+  .cert-grid{grid-template-columns:1fr 1fr}
+  .db-actions{padding:12px;display:grid;grid-template-columns:1fr 1fr}
+  .btn-db{width:100%}
+}
+@media(max-width:520px){
+  .home-brand h1{font-size:2rem}
+  .sc-item{grid-template-columns:24px auto 1fr;gap:8px}.sc-sev{grid-column:3;justify-self:start;margin-top:3px}
+  .sim-topbar{align-items:flex-start}.sim-spacer{display:none}
+  .sim-title{max-width:100%;white-space:normal}.mode-chip{display:none}
+  .scene-location-tag,.scene-status-tag{font-size:.64rem;padding:4px 8px;max-width:46%;line-height:1.2}
+  .patient-strip{grid-template-columns:1fr}.pt-cell{border-right:none}
+  .activity-body{display:grid;grid-template-columns:1fr}.activity-head{align-items:flex-start}
+  .options-label{margin-top:2px}.opt-btn{gap:8px}.opt-letter{min-width:18px}.opt-text{font-size:.9rem}
+  .sim-right{display:none}
+  .cert-grid,.db-stats,.db-actions{grid-template-columns:1fr}
+}
+
+@media print{
+  #screen-home,#screen-sim{display:none!important}
+  #screen-debrief{display:block!important}
+  .db-actions{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ API KEY ══════════════ -->
+<main id="screen-key" class="screen active">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 30% 0%,#0a1a3a 0%,#080c14 55%)">
+  <div style="max-width:460px;width:100%;text-align:center">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.8rem;font-weight:800;color:#dce8f5;margin-bottom:6px">SVB <span style="color:#00d4ff">Pediátrico</span></div>
+    <div style="color:#7a9abf;font-size:0.88rem;margin-bottom:32px;letter-spacing:0.04em">Simulador de emergencias · Escuela Infantil · IA</div>
+    <div style="background:#0e1420;border:1px solid #1e2d47;border-radius:12px;padding:28px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#3d5a7a;margin-bottom:6px;text-align:left">API Key de OpenRouter</div>
+      <div style="position:relative;margin-bottom:12px">
+        <input id="api-key-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="sk-or-v1-..." 
+          style="width:100%;background:#141d2e;border:1px solid #1e2d47;border-radius:7px;padding:12px 44px 12px 14px;color:#dce8f5;font-family:'IBM Plex Mono',monospace;font-size:0.82rem;outline:none;transition:border-color .15s;letter-spacing:0.02em"
+          onfocus="this.style.borderColor='#0099cc'" onblur="this.style.borderColor='#1e2d47'"/>
+        <button onclick="var i=document.getElementById('api-key-input');i.type=i.type==='text'?'password':'text';this.textContent=i.type==='text'?'👁':'🙈'" 
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;font-size:1rem;color:var(--text2)">👁</button>
+      </div>
+      <button onclick="submitApiKey()" 
+        style="width:100%;background:linear-gradient(135deg,#0077cc,#00aaee);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:14px;border-radius:7px;border:1px solid rgba(0,212,255,0.3);cursor:pointer;transition:all .15s;box-shadow:0 4px 20px rgba(0,120,200,0.35)"
+        onmouseover="this.style.background='linear-gradient(135deg,#0088dd,#00ccff)'" 
+        onmouseout="this.style.background='linear-gradient(135deg,#0077cc,#00aaee)'">
+        ▶ CONTINUAR
+      </button>
+      <div id="key-error" style="color:#ff6060;font-size:0.75rem;margin-top:10px;display:none"></div>
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid #1e2d47;text-align:left">
+        <div style="font-size:0.72rem;color:#3d5a7a;line-height:1.7">
+          OpenRouter · Si configuras el proxy docente, los alumnos entran directamente sin escribir clave. Si no hay proxy, puedes introducir la clave una vez por dispositivo.<br>
+          🔒 La key se guarda solo en este navegador mediante almacenamiento local. No se sube a GitHub ni se guarda en ningún servidor.<br><br>
+          <strong style="color:#dce8f5">Cómo obtener la key (2 min):</strong><br>
+          1. Ve a <a href="https://openrouter.ai/settings/keys" target="_blank" style="color:#00d4ff">openrouter.ai/settings/keys</a><br>
+          2. Regístrate con Google o email<br>
+          3. Clic en <strong style="color:#dce8f5">Create Key</strong><br>
+          4. Copia la key (empieza por <code style="color:#00d4ff;background:rgba(0,212,255,.08);padding:1px 5px;border-radius:3px">sk-or-v1-...</code>)
+          Obtén tu key en <a href="https://aistudio.google.com" target="_blank" style="color:#0099cc">aistudio.google.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- ══════════════ HOME ══════════════ -->
+<main id="screen-home" class="screen">
+<div class="home-wrap">
+
+  <div class="home-brand">
+    <h1>SVB <span>Pediátrico</span></h1>
+    <p>Simulador de emergencias · Escuela Infantil 0-3 años · Evaluación con IA</p>
+  </div>
+
+  <div>
+    <div class="hpanel" style="margin-bottom:12px">
+      <div class="hpanel-title">Selecciona el escenario</div>
+      <div class="sc-list" id="sc-list"></div>
+    </div>
+  </div>
+
+  <div class="home-right">
+    <div class="hpanel">
+      <div class="hpanel-title">Edad simulada</div>
+      <label class="radio-row"><input type="radio" name="age" value="lactante"><span>🍼 Lactante &lt; 1 año</span></label>
+      <label class="radio-row"><input type="radio" name="age" value="infantil" checked><span>🧒 Niño/a 1 – 3 años</span></label>
+    </div>
+    <div class="hpanel">
+      <div class="hpanel-title">Perfil</div>
+      <label class="radio-row"><input type="radio" name="profile" value="docente_ei" checked><span>📚 Docente escuela infantil</span></label>
+      <label class="radio-row"><input type="radio" name="profile" value="docente_svb"><span>❤️ Docente formado en SVB</span></label>
+      <label class="radio-row"><input type="radio" name="profile" value="tes"><span>🚑 TES</span></label>
+    </div>
+    <div class="hpanel">
+      <div class="hpanel-title">Modo de simulación</div>
+      <label class="toggle-row"><input type="checkbox" id="exam-mode"><span>Modo examen<small>Tiempo límite, sin pistas de práctica y evaluación más estricta.</small></span></label>
+      <label class="toggle-row"><input type="checkbox" id="audio-mode" checked><span>Audio ambiente<small>Sonido suave de aula/comedor y pulso de urgencia.</small></span></label>
+    </div>
+    <button class="btn-go" id="btn-start">▶ INICIAR EVALUACIÓN</button>
+    <button class="btn-db btn-db-s" id="btn-clear-key" type="button">Cambiar API guardada</button>
+    <button class="btn-db btn-db-s" id="btn-export-cache" type="button">Exportar cache offline</button>
+    <div class="warn-box">⚠️ Herramienta formativa. Seguir siempre protocolos del centro y la indicación de los servicios de emergencia. Fuentes: ERC 2025 · Alerta Escolar 061 Galicia.</div>
+  </div>
+
+</div>
+</main>
+
+<!-- ══════════════ SIMULACIÓN ══════════════ -->
+<main id="screen-sim" class="screen">
+
+  <div class="sim-topbar">
+    <div>
+      <div class="sim-title" id="sim-title">—</div>
+      <div style="display:flex;gap:8px;margin-top:3px">
+        <span class="sim-badge" id="sim-sev-badge">—</span>
+        <span id="sim-age-badge" style="font-size:0.7rem;color:var(--text2);padding:3px 8px;background:rgba(0,212,255,.07);border:1px solid var(--border2);border-radius:4px">—</span>
+        <span class="mode-chip" id="sim-mode-badge">ENTRENAMIENTO</span>
+      </div>
+    </div>
+    <div class="sim-spacer"></div>
+    <div class="timer" id="timer">00:00</div>
+    <button class="btn-audio" id="btn-audio" title="Activar o silenciar audio ambiente">Audio</button>
+    <button class="btn-fin" id="btn-end">■ Finalizar</button>
+  </div>
+
+  <div class="sim-body">
+
+    <!-- Izquierda -->
+    <div class="sim-left">
+
+      <!-- Escena visual generada -->
+      <div class="scene-img-wrap">
+        <svg class="scene-svg" id="scene-svg" viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="260" fill="#0e1420"/>
+          <text x="400" y="135" text-anchor="middle" fill="#1e2d47" font-size="48" font-family="sans-serif">⏳</text>
+        </svg>
+        <div class="scene-photo-bg" id="scene-photo-bg" aria-hidden="true"></div>
+        <img class="scene-photo" id="scene-photo" alt="" loading="eager"/>
+        <div class="scene-overlay"></div>
+        <div class="scene-location-tag" id="scene-location">📍 —</div>
+        <div class="scene-status-tag" id="scene-status-tag"></div>
+      </div>
+
+      <!-- Narrativa IA -->
+      <div class="narrative-area">
+        <div class="narrative-label">Situación</div>
+        <div class="narrative-text" id="narrative-text">Iniciando escenario...</div>
+      </div>
+
+      <!-- Estado paciente -->
+      <div class="patient-strip" id="patient-strip">
+        <div class="pt-cell"><div class="pt-cell-label">Consciencia</div><div class="pt-cell-val val-neutral" id="pt-consc">—</div></div>
+        <div class="pt-cell"><div class="pt-cell-label">Respiración</div><div class="pt-cell-val val-neutral" id="pt-resp">—</div></div>
+        <div class="pt-cell"><div class="pt-cell-label">Color</div><div class="pt-cell-val val-neutral" id="pt-color">—</div></div>
+        <div class="pt-cell"><div class="pt-cell-label">Riesgo</div><div class="pt-cell-val val-neutral" id="pt-risk">—</div></div>
+      </div>
+
+      <!-- Microactividad práctica -->
+      <div class="activity-panel" id="activity-panel">
+        <div class="activity-head">
+          <div class="activity-title" id="activity-title">Actividad práctica</div>
+          <div class="activity-score" id="activity-score">+0 práctica</div>
+        </div>
+        <div class="activity-prompt" id="activity-prompt">Selecciona un escenario para practicar una destreza clave.</div>
+        <div class="activity-body" id="activity-body"></div>
+      </div>
+
+      <!-- Opciones de acción -->
+      <div class="options-area" id="options-area">
+        <div class="options-label">¿Qué haces?</div>
+        <div class="options-grid" id="options-grid">
+          <div class="opt-loading"><span>Cargando escenario</span><span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Derecha: log -->
+    <div class="sim-right">
+      <div class="log-header">Registro de decisiones</div>
+      <div class="log-feed" id="log-feed"></div>
+      <div class="step-indicator">
+        <span class="step-num" id="step-num">0/0</span>
+        <div class="step-progress"><div class="step-bar" id="step-bar" style="width:0%"></div></div>
+        <span class="step-score" id="step-score">0 pts</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ══════════════ DEBRIEFING ══════════════ -->
+<main id="screen-debrief" class="screen">
+  <div class="db-hero">
+    <div class="db-result-box">
+      <span class="db-result-label">Resultado</span>
+      <span class="db-result" id="db-result">—</span>
+      <span style="font-size:0.78rem;color:var(--text2);margin-top:4px" id="db-subtitle">—</span>
+    </div>
+    <div class="db-stats">
+      <div class="db-stat"><span class="db-stat-val" id="db-score">—</span><span class="db-stat-label">Puntos</span></div>
+      <div class="db-stat"><span class="db-stat-val" id="db-time">—</span><span class="db-stat-label">Tiempo</span></div>
+      <div class="db-stat"><span class="db-stat-val" id="db-correct">—</span><span class="db-stat-label">Correctas</span></div>
+      <div class="db-stat"><span class="db-stat-val" id="db-errors">—</span><span class="db-stat-label">Errores</span></div>
+    </div>
+  </div>
+  <div class="db-body">
+    <div class="db-card wide certificate-card" id="certificate-card">
+      <div class="db-card-title">Certificado de simulación</div>
+      <div class="cert-grid">
+        <div class="cert-field"><div class="cert-label">Escenario</div><div class="cert-value" id="cert-scenario">—</div></div>
+        <div class="cert-field"><div class="cert-label">Modo</div><div class="cert-value" id="cert-mode">—</div></div>
+        <div class="cert-field"><div class="cert-label">Variante</div><div class="cert-value" id="cert-variant">—</div></div>
+        <div class="cert-field"><div class="cert-label">Resultado</div><div class="cert-value" id="cert-result">—</div></div>
+      </div>
+    </div>
+    <div class="db-card wide">
+      <div class="db-card-title">📋 Análisis de decisiones</div>
+      <div class="timeline" id="db-timeline"></div>
+    </div>
+    <div class="db-card">
+      <div class="db-card-title">💬 Preguntas para el debriefing</div>
+      <div id="db-questions"></div>
+    </div>
+    <div class="db-card">
+      <div class="db-card-title">📚 Referencias documentales</div>
+      <div id="db-refs"></div>
+    </div>
+  </div>
+  <div class="db-actions">
+    <button class="btn-db btn-db-p" id="btn-repeat">🔄 Repetir escenario</button>
+    <button class="btn-db btn-db-s" id="btn-home2">🏠 Cambiar escenario</button>
+    <button class="btn-db btn-db-s" id="btn-export">⬇️ Certificado PDF</button>
+    <button class="btn-db btn-db-s" onclick="window.print()">🖨️ Imprimir</button>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+// ══════════════════════════════════════════════════════
+// DATOS DE ESCENARIOS
+// ══════════════════════════════════════════════════════
+const SCENARIOS = [
+  {
+    id: 'siesta-pcr',
+    index: 1,
+    title: 'Siesta: no respira',
+    location: 'Sala de descanso',
+    icon: '🛏️',
+    severity: 'critica',
+    ages: ['lactante','infantil'],
+    svgScene: (age) => renderSceneSiesta(age),
+    initialPatient: { consc: 'Inconsciente', resp: 'Ausente', color: 'Pálido', risk: '🔴 CRÍTICO' },
+    systemPrompt: (age, profile) => `Eres el motor de un simulador médico de SVB pediátrico para escuela infantil. 
+Edad del paciente: ${age === 'lactante' ? 'lactante 8 meses' : 'niño/a 2 años'}.
+Perfil del alumno: ${PROFILE_LABELS[profile]}.
+
+ESCENARIO: Durante la siesta, el/la ${age === 'lactante' ? 'bebé' : 'niño/a'} está completamente inmóvil. No responde a estímulos. No respira.
+
+PROTOCOLO CORRECTO (ERC 2025 + Charla Escolas Infantís):
+1. Comprobar seguridad de la escena
+2. Comprobar consciencia (estimulación suave)
+3. Pedir ayuda a otra educadora
+4. Llamar al 112/061 (o delegar)
+5. Abrir vía aérea (frente-mentón, posición neutra en lactante)
+6. Comprobar respiración: Ver/Oír/Sentir máx 10s
+7. 5 ventilaciones de rescate
+8. RCP 30:2 ${age === 'lactante' ? '— técnica DOS PULGARES rodeando el tórax (ERC 2025 SVN p.60), NO dos dedos' : '— compresiones con talón de la mano'}
+9. DESA en cuanto esté disponible (nadie toca durante análisis/descarga)
+
+ERRORES CRÍTICOS: no llamar al 112, no iniciar RCP, usar Heimlich en lactante, tocar durante descarga DESA, ${age === 'lactante' ? 'usar técnica de dos dedos como técnica principal (penaliza pero no crítico)' : ''}.
+
+Responde SOLO con JSON válido, sin markdown, sin texto extra:
+{
+  "narrative": "texto inmersivo 2-3 frases describiendo la escena actual",
+  "patientState": {"consc":"...","resp":"...","color":"...","risk":"🔴/🟠/🟡/🟢 texto"},
+  "options": [
+    {"id":"a","text":"descripción acción A","correct":true/false,"critical_error":false,"feedback":"explicación breve al finalizar","scoreImpact":número},
+    {"id":"b","text":"descripción acción B",...},
+    {"id":"c","text":"descripción acción C",...},
+    {"id":"d","text":"descripción acción D",...}
+  ],
+  "stepLabel": "texto corto del momento del escenario"
+}`,
+    totalSteps: 8,
+    debriefingPoints: [
+      '¿Se comprobó la seguridad antes de actuar?',
+      '¿Se pidió ayuda y se delegó la llamada al 112?',
+      '¿Se iniciaron las 5 ventilaciones de rescate antes de las compresiones?',
+      '¿Se usó la técnica correcta de compresiones para la edad?',
+      '¿Nadie tocó al paciente durante el análisis del DESA?'
+    ],
+    refs: ['ERC2025_SVN','ERC2025_SVP','CHARLA_EI']
+  },
+  {
+    id: 'ovace-comedor',
+    index: 2,
+    title: 'Comedor: atragantamiento',
+    location: 'Comedor',
+    icon: '🍽️',
+    severity: 'critica',
+    ages: ['lactante','infantil'],
+    svgScene: (age) => renderSceneComedor(age),
+    initialPatient: { consc: 'Consciente', resp: 'Ausente', color: 'Cianótico', risk: '🔴 CRÍTICO' },
+    systemPrompt: (age, profile) => `Eres el motor de un simulador médico de SVB pediátrico para escuela infantil.
+Edad del paciente: ${age === 'lactante' ? 'lactante 9 meses' : 'niño/a 18 meses'}.
+Perfil del alumno: ${PROFILE_LABELS[profile]}.
+
+ESCENARIO: OVACE (obstrucción vía aérea cuerpo extraño). ${age === 'lactante' ? 'El bebé se ha atragantado durante la comida. No llora, no tose, se está poniendo azul.' : 'El/la niño/a se ha atragantado. No puede toser ni llorar. Cianosis visible.'}
+
+PROTOCOLO CORRECTO (ERC 2025 + Charla EI):
+- Valorar si tos es efectiva o ineficaz
+- Tos efectiva → animar a toser
+- Tos ineficaz → 5 golpes interescapulares
+- ${age === 'lactante' ? '5 compresiones TORÁCICAS (dos pulgares rodeando tórax) — NUNCA abdominales en lactante' : '5 compresiones abdominales (Heimlich)'}
+- Si inconsciente → iniciar RCP pediátrica
+- Llamar 112
+
+ERRORES CRÍTICOS: ${age === 'lactante' ? 'hacer Heimlich (compresiones abdominales) en lactante' : 'hacer compresiones torácicas en lugar de abdominales'}, meter dedos a ciegas en la boca, dar agua.
+
+Responde SOLO con JSON válido:
+{
+  "narrative": "texto inmersivo 2-3 frases",
+  "patientState": {"consc":"...","resp":"...","color":"...","risk":"..."},
+  "options": [
+    {"id":"a","text":"...","correct":true/false,"critical_error":false,"feedback":"...","scoreImpact":número},
+    {"id":"b",...}, {"id":"c",...}, {"id":"d",...}
+  ],
+  "stepLabel": "..."
+}`,
+    totalSteps: 6,
+    debriefingPoints: [
+      '¿Se valoró correctamente si la tos era efectiva o ineficaz?',
+      `¿Se aplicó la técnica correcta según la edad del paciente?`,
+      '¿Se evitaron las compresiones contraindicadas para la edad?',
+      '¿Se activó el sistema de emergencias en el momento adecuado?'
+    ],
+    refs: ['ERC2025_SVN','ERC2025_SVP','CHARLA_EI']
+  },
+  {
+    id: 'convulsion',
+    index: 3,
+    title: 'Convulsión / Alerta Escolar',
+    location: 'Aula',
+    icon: '⚠️',
+    severity: 'critica',
+    ages: ['lactante','infantil'],
+    svgScene: (age) => renderSceneAula(age, 'convulsion'),
+    initialPatient: { consc: 'Inconsciente', resp: 'Irregular', color: 'Cianótico', risk: '🔴 CRÍTICO' },
+    systemPrompt: (age, profile) => `Eres el motor de un simulador médico de SVB pediátrico para escuela infantil.
+Edad del paciente: ${age === 'lactante' ? 'lactante 11 meses' : 'niño/a 2 años'}.
+Perfil del alumno: ${PROFILE_LABELS[profile]}.
+
+ESCENARIO: Crisis convulsiva. El/la ${age === 'lactante' ? 'bebé' : 'niño/a'} tiene movimientos involuntarios rítmicos, rigidez, pérdida de contacto. Está inscrito en el Programa Alerta Escolar 061 (epilepsia).
+
+PROTOCOLO CORRECTO (Alerta Escolar 061 + Charla EI):
+1. Mantener la calma
+2. Proteger al niño — PLS, proteger la cabeza, alejar objetos
+3. Llamar al 061 (Alerta Escolar, no 112 — el médico accede al historial)
+4. Controlar el tiempo de la crisis
+5. NO introducir nada en la boca
+6. NO sujetar violentamente
+7. Si no cede y tiene medicación pautada → Diazepam rectal o Midazolam bucal
+8. Fase postcrítica: PLS, vigilar, tranquilizar
+
+ERRORES CRÍTICOS: meter objeto en la boca, sujetar violentamente, no proteger de golpes, no llamar al 061.
+
+Responde SOLO con JSON válido:
+{
+  "narrative": "texto inmersivo 2-3 frases",
+  "patientState": {"consc":"...","resp":"...","color":"...","risk":"..."},
+  "options": [
+    {"id":"a","text":"...","correct":true/false,"critical_error":false,"feedback":"...","scoreImpact":número},
+    {"id":"b",...}, {"id":"c",...}, {"id":"d",...}
+  ],
+  "stepLabel": "..."
+}`,
+    totalSteps: 7,
+    debriefingPoints: [
+      '¿Se protegió al niño de golpes desde el primer momento?',
+      '¿Se activó el Alerta Escolar llamando al 061?',
+      '¿Se evitó introducir objetos en la boca?',
+      '¿Se controló el tiempo de la crisis?',
+      '¿Se actuó correctamente en la fase postcrítica?'
+    ],
+    refs: ['ALERTA_ESCOLAR_061','CHARLA_EI','GUIA_PA']
+  },
+  {
+    id: 'anafilaxia',
+    index: 4,
+    title: 'Anafilaxia / Alerta Escolar',
+    location: 'Comedor',
+    icon: '🚨',
+    severity: 'critica',
+    ages: ['lactante','infantil'],
+    svgScene: (age) => renderSceneComedor(age, 'anafilaxia'),
+    initialPatient: { consc: 'Consciente', resp: 'Dificultosa', color: 'Ronchas/pálido', risk: '🔴 CRÍTICO' },
+    systemPrompt: (age, profile) => `Eres el motor de un simulador médico de SVB pediátrico para escuela infantil.
+Edad del paciente: ${age === 'lactante' ? 'lactante 9 meses' : 'niño/a 2 años'}.
+Perfil del alumno: ${PROFILE_LABELS[profile]}.
+
+ESCENARIO: Anafilaxia. Paciente inscrito en Alerta Escolar (alergia). Presenta ronchas, hinchazón de labios, dificultad respiratoria, palidez. Acaba de comer.
+
+PROTOCOLO CORRECTO (Código Anafilaxia 061 + Charla EI):
+1. Identificar signos de anafilaxia (piel + respiratorio/circulatorio)
+2. Pedir ayuda
+3. Activar Código Anafilaxia — llamar al 061
+4. Administrar adrenalina IM (muslo externo, 10s, masaje) si está pautada
+5. NO provocar vómito
+6. Posición: semi-incorporado si dificultad resp., tumbado si mareo/pérdida consc.
+7. Vigilar hasta llegada de emergencias
+
+ERRORES CRÍTICOS: provocar el vómito, no llamar al 061, no administrar adrenalina cuando está disponible y pautada.
+
+Responde SOLO con JSON válido:
+{
+  "narrative": "texto inmersivo 2-3 frases",
+  "patientState": {"consc":"...","resp":"...","color":"...","risk":"..."},
+  "options": [
+    {"id":"a","text":"...","correct":true/false,"critical_error":false,"feedback":"...","scoreImpact":número},
+    {"id":"b",...}, {"id":"c",...}, {"id":"d",...}
+  ],
+  "stepLabel": "..."
+}`,
+    totalSteps: 6,
+    debriefingPoints: [
+      '¿Se identificaron correctamente los signos de anafilaxia?',
+      '¿Se activó el Código Anafilaxia llamando al 061?',
+      '¿Se administró la adrenalina de forma correcta?',
+      '¿Se evitó provocar el vómito?'
+    ],
+    refs: ['ALERTA_ESCOLAR_061','CHARLA_EI','GUIA_PA']
+  },
+  {
+    id: 'hipoglucemia',
+    index: 5,
+    title: 'Hipoglucemia / Alerta Escolar',
+    location: 'Aula',
+    icon: '🍬',
+    severity: 'urgente',
+    ages: ['infantil'],
+    svgScene: (age) => renderSceneAula(age, 'hipoglucemia'),
+    initialPatient: { consc: 'Consciente', resp: 'Normal', color: 'Pálido/sudoroso', risk: '🟠 URGENTE' },
+    systemPrompt: (age, profile) => `Eres el motor de un simulador médico de SVB pediátrico para escuela infantil.
+Paciente: niño/a 3 años, inscrito en Alerta Escolar (diabetes).
+Perfil del alumno: ${PROFILE_LABELS[profile]}.
+
+ESCENARIO: Hipoglucemia. Niño/a pálido, sudoroso, irritable, torpe. Dice que tiene mucha hambre. Posible bajada de azúcar.
+
+PROTOCOLO CORRECTO (Charla EI + Alerta Escolar 061):
+- Reconocer signos: palidez, sudoración, hambre, torpeza, irritabilidad
+- Valorar consciencia
+- Llamar al 061 (Alerta Escolar)
+- SI CONSCIENTE: dar hidratos absorción rápida (zumo, azúcar, caramelo, refresco)
+  - Si no mejora en 15 min: repetir
+  - Si mejora: hidratos absorción lenta (pan, galleta, fruta)
+- SI INCONSCIENTE: NO dar nada por boca, PLS, Glucagón si pautado
+
+ERROR CRÍTICO: dar algo por boca si está inconsciente.
+
+Responde SOLO con JSON válido:
+{
+  "narrative": "texto inmersivo 2-3 frases",
+  "patientState": {"consc":"...","resp":"...","color":"...","risk":"..."},
+  "options": [
+    {"id":"a","text":"...","correct":true/false,"critical_error":false,"feedback":"...","scoreImpact":número},
+    {"id":"b",...}, {"id":"c",...}, {"id":"d",...}
+  ],
+  "stepLabel": "..."
+}`,
+    totalSteps: 6,
+    debriefingPoints: [
+      '¿Se reconocieron los signos de hipoglucemia?',
+      '¿Se valoró el nivel de consciencia antes de dar algo por boca?',
+      '¿Se activó el Alerta Escolar?',
+      '¿Se administró la glucosa rápida correctamente?'
+    ],
+    refs: ['ALERTA_ESCOLAR_061','CHARLA_EI']
+  },
+  {
+    id: 'quemadura',
+    index: 6,
+    title: 'Quemadura',
+    location: 'Aula / Cocina',
+    icon: '🔥',
+    severity: 'urgente',
+    ages: ['lactante','infantil'],
+    svgScene: (age) => renderSceneAula(age, 'quemadura'),
+    initialPatient: { consc: 'Consciente', resp: 'Normal', color: 'Enrojecido', risk: '🟠 URGENTE' },
+    systemPrompt: (age, profile) => `Eres el motor de un simulador médico de SVB pediátrico para escuela infantil.
+Edad: ${age === 'lactante' ? 'lactante 10 meses' : 'niño/a 2 años'}.
+Perfil: ${PROFILE_LABELS[profile]}.
+
+ESCENARIO: Quemadura. ${age === 'lactante' ? 'El bebé ha volcado agua caliente y tiene quemadura en brazo y tronco.' : 'El niño ha tocado el radiador. Quemadura en la palma de la mano.'}
+
+PROTOCOLO CORRECTO:
+1. Apartar de la fuente de calor
+2. Retirar ropa (excepto la pegada), anillos/pulseras
+3. Enfriar con agua corriente 15-20 minutos
+4. Cubrir con paño limpio o gasa húmeda
+5. Valorar gravedad — urgencias si afecta cara/manos/pies o es extensa
+NO: pomada, aceite, pasta de dientes, remedios caseros, romper ampollas.
+
+ERRORES CRÍTICOS: aplicar pomada/aceite, romper ampollas, no enfriar con agua.
+
+Responde SOLO con JSON válido:
+{
+  "narrative": "texto inmersivo 2-3 frases",
+  "patientState": {"consc":"...","resp":"...","color":"...","risk":"..."},
+  "options": [
+    {"id":"a","text":"...","correct":true/false,"critical_error":false,"feedback":"...","scoreImpact":número},
+    {"id":"b",...}, {"id":"c",...}, {"id":"d",...}
+  ],
+  "stepLabel": "..."
+}`,
+    totalSteps: 5,
+    debriefingPoints: [
+      '¿Se enfrió la quemadura con agua corriente durante el tiempo suficiente?',
+      '¿Se evitó aplicar pomada u otros remedios caseros?',
+      '¿Se valoró la gravedad para decidir si llamar al 112?'
+    ],
+    refs: ['CHARLA_EI','GUIA_PA']
+  },
+  {
+    id: 'pls',
+    index: 7,
+    title: 'Inconsciente que respira / PLS',
+    location: 'Aula',
+    icon: '🔄',
+    severity: 'urgente',
+    ages: ['lactante','infantil'],
+    svgScene: (age) => renderSceneAula(age, 'pls'),
+    initialPatient: { consc: 'Inconsciente', resp: 'Presente', color: 'Normal', risk: '🟠 URGENTE' },
+    systemPrompt: (age, profile) => `Eres el motor de un simulador médico de SVB pediátrico para escuela infantil.
+Edad: ${age === 'lactante' ? 'lactante 10 meses' : 'niño/a 2 años'}.
+Perfil: ${PROFILE_LABELS[profile]}.
+
+ESCENARIO: ${age === 'lactante' ? 'El bebé' : 'El/la niño/a'} está inconsciente en el suelo. Al comprobar la respiración: SÍ RESPIRA con normalidad.
+
+PROTOCOLO CORRECTO:
+1. Seguridad
+2. Comprobar consciencia
+3. Abrir vía aérea (frente-mentón)
+4. Comprobar respiración: Ver/Oír/Sentir
+5. Respira → NO iniciar RCP
+6. Colocar en PLS
+7. Llamar al 112/061
+8. Vigilar que sigue respirando continuamente
+
+ERROR CRÍTICO: iniciar RCP cuando el paciente respira.
+
+Responde SOLO con JSON válido:
+{
+  "narrative": "texto inmersivo 2-3 frases",
+  "patientState": {"consc":"...","resp":"...","color":"...","risk":"..."},
+  "options": [
+    {"id":"a","text":"...","correct":true/false,"critical_error":false,"feedback":"...","scoreImpact":número},
+    {"id":"b",...}, {"id":"c",...}, {"id":"d",...}
+  ],
+  "stepLabel": "..."
+}`,
+    totalSteps: 6,
+    debriefingPoints: [
+      '¿Se comprobó la respiración antes de actuar?',
+      '¿Se diferenció correctamente PCR de inconsciente que respira?',
+      '¿Se colocó en PLS sin iniciar RCP innecesariamente?',
+      '¿Se vigiló continuamente la respiración?'
+    ],
+    refs: ['ERC2025_SVP','CHARLA_EI']
+  },
+  {
+    id: 'intoxicacion',
+    index: 8,
+    title: 'Intoxicación',
+    location: 'Aula',
+    icon: '☠️',
+    severity: 'critica',
+    ages: ['lactante','infantil'],
+    svgScene: (age) => renderSceneAula(age, 'intoxicacion'),
+    initialPatient: { consc: 'Consciente', resp: 'Normal', color: 'Normal', risk: '🟠 URGENTE' },
+    systemPrompt: (age, profile) => `Eres el motor de un simulador médico de SVB pediátrico para escuela infantil.
+Edad: ${age === 'lactante' ? 'lactante 10 meses' : 'niño/a 2 años'}.
+Perfil: ${PROFILE_LABELS[profile]}.
+
+ESCENARIO: ${age === 'lactante' ? 'El bebé ha cogido un producto de limpieza de una estantería baja. Tiene residuos alrededor de la boca.' : 'El/la niño/a ha ingerido producto de limpieza. Boca quemada. Llora.'}
+
+PROTOCOLO CORRECTO:
+1. Retirar acceso al producto — apartar al niño
+2. Identificar la sustancia — guardar envase
+3. Llamar Toxicología: 91 562 04 20 o 112
+4. NO provocar el vómito
+5. NO dar leche ni otros líquidos
+6. Vigilar
+
+ERRORES CRÍTICOS: provocar el vómito, dar leche, no llamar a toxicología.
+
+Responde SOLO con JSON válido:
+{
+  "narrative": "...",
+  "patientState": {"consc":"...","resp":"...","color":"...","risk":"..."},
+  "options": [{"id":"a","text":"...","correct":true/false,"critical_error":false,"feedback":"...","scoreImpact":número},{"id":"b",...},{"id":"c",...},{"id":"d",...}],
+  "stepLabel": "..."
+}`,
+    totalSteps: 5,
+    debriefingPoints: [
+      '¿Se identificó y guardó el envase del producto?',
+      '¿Se llamó a Toxicología (91 562 04 20)?',
+      '¿Se evitó provocar el vómito?',
+      '¿Se evitó dar leche u otros líquidos?'
+    ],
+    refs: ['GUIA_PA']
+  }
+];
+
+const PROFILE_LABELS = {
+  docente_ei: 'Docente de escuela infantil (sin formación SVB específica)',
+  docente_svb: 'Docente con formación en SVB',
+  tes: 'Técnico en Emergencias Sanitarias (TES)'
+};
+
+const REFS_DATA = {
+  ERC2025_SVN: { title: 'Guías ERC 2025 — Soporte Vital Neonatal', source: 'European Resuscitation Council', year: 2025 },
+  ERC2025_SVP: { title: 'Guías ERC 2025 — Soporte Vital Pediátrico', source: 'European Resuscitation Council', year: 2025 },
+  ALERTA_ESCOLAR_061: { title: 'Programa Alerta Escolar', source: 'Fundación Pública Urxencias Sanitarias de Galicia — 061', year: 2024 },
+  CHARLA_EI: { title: 'Charla Escolas Infantís — Material formativo', source: 'Material propio SVB/OVACE/PA en Escuela Infantil', year: 2025 },
+  GUIA_PA: { title: 'Guía de Primeros Auxilios para Padres y Madres', source: 'Guía pediátrica de primeros auxilios', year: 2024 }
+};
+
+const SCENE_PHOTO_SRC = {
+  'siesta-pcr': 'simulador-svb-assets/siesta-pcr.png',
+  'ovace-comedor': 'simulador-svb-assets/ovace-comedor.png',
+  'convulsion': 'simulador-svb-assets/convulsion.png',
+  'anafilaxia': 'simulador-svb-assets/anafilaxia.png',
+  'hipoglucemia': 'simulador-svb-assets/hipoglucemia.png',
+  'quemadura': 'simulador-svb-assets/quemadura.png',
+  'pls': 'simulador-svb-assets/pls.png',
+  'intoxicacion': 'simulador-svb-assets/intoxicacion.png'
+};
+
+const SCENARIO_VARIANTS = {
+  'siesta-pcr': [
+    'La docente encuentra al niño al revisar las colchonetas después de una siesta larga.',
+    'Otra educadora está cerca de la puerta y puede recibir tareas delegadas.',
+    'El aula está tranquila, pero el teléfono del centro queda en recepción.'
+  ],
+  'ovace-comedor': [
+    'El atragantamiento ocurre con trozos de fruta durante la merienda.',
+    'Hay dos niños más en la mesa y una auxiliar puede retirar platos.',
+    'El niño estaba tosiendo, pero la tos se vuelve silenciosa e ineficaz.'
+  ],
+  'convulsion': [
+    'La crisis empieza durante una actividad de alfombra y hay juguetes alrededor.',
+    'La familia dejó medicación pautada y ficha de Alerta Escolar actualizada.',
+    'La crisis ya lleva aproximadamente dos minutos cuando llegas.'
+  ],
+  'anafilaxia': [
+    'El episodio aparece después de probar un alimento nuevo en comedor.',
+    'El autoinyector está en el botiquín identificado del aula.',
+    'Hay ronchas, tos persistente y labios hinchados.'
+  ],
+  'hipoglucemia': [
+    'El niño se muestra sudoroso tras el patio y pide comida.',
+    'Hay zumo disponible en el aula y la ficha de diabetes está en dirección.',
+    'El niño está consciente, pero torpe e irritable.'
+  ],
+  'quemadura': [
+    'La quemadura ocurre al tocar una jarra con agua caliente.',
+    'La zona afectada es la mano y hay un lavabo infantil cerca.',
+    'La piel está roja y dolorosa, sin sangrado.'
+  ],
+  'pls': [
+    'El niño no responde tras una caída leve, pero respira con normalidad.',
+    'La respiración se aprecia al abrir vía aérea y observar el tórax.',
+    'Otra educadora puede llamar mientras se mantiene vigilancia.'
+  ],
+  'intoxicacion': [
+    'El producto estaba en una estantería baja tras una limpieza del aula.',
+    'El envase está cerca y permite identificar la sustancia.',
+    'El niño tiene restos alrededor de la boca y llora.'
+  ]
+};
+
+const EXAM_TIME_LIMIT = 420;
+
+
+
+
+function cacheDecisionSignature() {
+  return App.decisions.map(d => [
+    d.stepLabel,
+    d.optionText,
+    d.correct ? '1' : '0',
+    d.criticalError ? '1' : '0'
+  ].join('~')).join('|');
+}
+
+function scenarioCacheKey(stepOverride) {
+  const step = typeof stepOverride === 'number' ? stepOverride : App.step;
+  const variant = App.currentVariant || 'standard';
+  return 'svb-cache-v2-' + [
+    App.scenario?.id || 'none',
+    App.age,
+    App.profile,
+    App.examMode ? 'exam' : 'train',
+    step,
+    variant,
+    cacheDecisionSignature()
+  ].map(v => encodeURIComponent(String(v))).join('__');
+}
+
+function saveScenarioCache(parsed) {
+  try {
+    const key = scenarioCacheKey();
+    const payload = {
+      savedAt: new Date().toISOString(),
+      scenario: App.scenario?.id,
+      age: App.age,
+      profile: App.profile,
+      examMode: App.examMode,
+      variant: App.currentVariant,
+      step: App.step,
+      decisionPath: App.decisions,
+      response: parsed
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
+    const index = JSON.parse(localStorage.getItem('svb-cache-index') || '[]');
+    if (!index.includes(key)) index.push(key);
+    localStorage.setItem('svb-cache-index', JSON.stringify(index.slice(-600)));
+  } catch(e) {}
+}
+
+function getScenarioCache() {
+  try {
+    const exact = JSON.parse(localStorage.getItem(scenarioCacheKey()) || 'null');
+    if (exact?.response) return exact.response;
+    // Fallback suave: mismo escenario/edad/perfil/modo/paso aunque no coincida la variante exacta.
+    const prefix = 'svb-cache-v2-' + [
+      App.scenario?.id || 'none',
+      App.age,
+      App.profile,
+      App.examMode ? 'exam' : 'train',
+      App.step
+    ].map(v => encodeURIComponent(String(v))).join('__');
+    const index = JSON.parse(localStorage.getItem('svb-cache-index') || '[]').reverse();
+    for (const key of index) {
+      if (!key.startsWith(prefix)) continue;
+      const item = JSON.parse(localStorage.getItem(key) || 'null');
+      if (item?.response) return item.response;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function exportOfflineCache() {
+  try {
+    const index = JSON.parse(localStorage.getItem('svb-cache-index') || '[]');
+    const data = index.map(key => [key, localStorage.getItem(key)]).filter(x => x[1]);
+    const blob = new Blob([JSON.stringify({ exportedAt:new Date().toISOString(), data }, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'svb-cache-offline.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) { toast('No se pudo exportar la cache', 'warn'); }
+}
+
+function getApiProxyUrl() {
+  return (window.SVB_API_PROXY || '').trim();
+}
+
+function hasApiAccess() {
+  return !!getApiProxyUrl() || !!loadSavedApiKey();
+}
+
+function hasSavedApiKey() {
+  try { return !!localStorage.getItem('svb-openrouter-key'); } catch(e) { return false; }
+}
+
+function loadSavedApiKey() {
+  try { return localStorage.getItem('svb-openrouter-key') || ''; } catch(e) { return ''; }
+}
+
+function saveApiKey(key) {
+  try { localStorage.setItem('svb-openrouter-key', key); } catch(e) {}
+}
+
+function clearSavedApiKey() {
+  try { localStorage.removeItem('svb-openrouter-key'); } catch(e) {}
+  App.apiKey = '';
+  const inp = document.getElementById('api-key-input');
+  if (inp) inp.value = '';
+  showScreen('key');
+}
+
+const PRACTICE_ACTIVITIES = {
+  'siesta-pcr': {
+    type: 'sequence',
+    title: 'Secuencia SVB',
+    prompt: 'Ordena los primeros pasos antes de iniciar la RCP.',
+    items: [
+      { id: 'seguridad', text: 'Seguridad' },
+      { id: 'respuesta', text: 'Comprobar respuesta' },
+      { id: 'ayuda', text: 'Pedir ayuda' },
+      { id: 'respira', text: 'Ver/Oír/Sentir 10 s' }
+    ],
+    answer: ['seguridad','respuesta','ayuda','respira'],
+    ok: 'Secuencia inicial correcta: escena segura, respuesta, ayuda y respiración.',
+    bad: 'Revisa el orden: no saltes la valoración de respiración antes de decidir RCP.'
+  },
+  'ovace-comedor': {
+    type: 'selector',
+    title: 'Técnica por edad',
+    prompt: 'Elige la maniobra adecuada si la tos es ineficaz.',
+    options: [
+      { id: 'lactante', text: 'Lactante: 5 golpes + 5 compresiones torácicas' },
+      { id: 'infantil', text: 'Niño/a: 5 golpes + 5 compresiones abdominales' },
+      { id: 'dedos', text: 'Barrido digital a ciegas' },
+      { id: 'agua', text: 'Dar agua para arrastrar el alimento' }
+    ],
+    answerByAge: { lactante: 'lactante', infantil: 'infantil' },
+    ok: 'Bien: la técnica cambia con la edad y se evitan barridos a ciegas.',
+    bad: 'Ojo con la edad: en lactantes no se hacen compresiones abdominales.'
+  },
+  'convulsion': {
+    type: 'checklist',
+    title: 'Protección durante crisis',
+    prompt: 'Marca las acciones seguras durante una convulsión.',
+    options: [
+      { id: 'cabeza', text: 'Proteger cabeza' },
+      { id: 'objetos', text: 'Alejar objetos' },
+      { id: 'tiempo', text: 'Cronometrar crisis' },
+      { id: 'boca', text: 'Meter objeto en boca' },
+      { id: 'sujetar', text: 'Sujetar fuerte brazos y piernas' }
+    ],
+    answer: ['cabeza','objetos','tiempo'],
+    ok: 'Correcto: proteger, observar y medir el tiempo sin introducir nada en la boca.',
+    bad: 'Hay acciones peligrosas mezcladas: no se introduce nada en la boca ni se sujeta con fuerza.'
+  },
+  'anafilaxia': {
+    type: 'hotspot',
+    title: 'Zona de adrenalina',
+    prompt: 'Selecciona dónde se administra la adrenalina autoinyectable.',
+    options: [
+      { id: 'muslo', text: 'Muslo externo' },
+      { id: 'brazo', text: 'Brazo' },
+      { id: 'gluteo', text: 'Glúteo' },
+      { id: 'boca', text: 'Boca' }
+    ],
+    answer: 'muslo',
+    ok: 'Correcto: adrenalina intramuscular en la cara externa del muslo.',
+    bad: 'La zona preferente es el muslo externo, con el dispositivo indicado.'
+  },
+  'hipoglucemia': {
+    type: 'selector',
+    title: 'Consciencia primero',
+    prompt: 'Niño consciente con síntomas de hipoglucemia. ¿Qué aportas primero?',
+    options: [
+      { id: 'rapida', text: 'Azúcar, zumo o hidrato de absorción rápida' },
+      { id: 'lenta', text: 'Solo pan o galleta como primera medida' },
+      { id: 'nada', text: 'Nada por boca aunque esté consciente' },
+      { id: 'insulina', text: 'Insulina rápida' }
+    ],
+    answer: 'rapida',
+    ok: 'Bien: si está consciente, primero hidrato de absorción rápida.',
+    bad: 'Primero se confirma consciencia; si está consciente, glucosa rápida.'
+  },
+  'quemadura': {
+    type: 'counter',
+    title: 'Enfriamiento',
+    prompt: 'Ajusta los minutos de agua corriente recomendados.',
+    min: 0,
+    max: 30,
+    start: 5,
+    answerMin: 15,
+    answerMax: 20,
+    unit: 'min',
+    ok: 'Correcto: 15-20 minutos de agua corriente, sin pomadas ni remedios caseros.',
+    bad: 'Debe enfriarse con agua corriente durante 15-20 minutos.'
+  },
+  'pls': {
+    type: 'sequence',
+    title: 'PLS segura',
+    prompt: 'Ordena la actuación si está inconsciente pero respira.',
+    items: [
+      { id: 'via', text: 'Abrir vía aérea' },
+      { id: 'respira', text: 'Comprobar respiración' },
+      { id: 'pls', text: 'Colocar en PLS' },
+      { id: 'vigilar', text: 'Vigilar respiración' }
+    ],
+    answer: ['via','respira','pls','vigilar'],
+    ok: 'Muy bien: respira, así que PLS y vigilancia, no RCP.',
+    bad: 'Primero confirma respiración; si respira, PLS y vigilancia continua.'
+  },
+  'intoxicacion': {
+    type: 'checklist',
+    title: 'Intoxicación',
+    prompt: 'Marca las acciones correctas ante ingesta de producto de limpieza.',
+    options: [
+      { id: 'retirar', text: 'Retirar producto' },
+      { id: 'envase', text: 'Guardar envase' },
+      { id: 'toxico', text: 'Llamar Toxicología/112' },
+      { id: 'vomito', text: 'Provocar vómito' },
+      { id: 'leche', text: 'Dar leche' }
+    ],
+    answer: ['retirar','envase','toxico'],
+    ok: 'Correcto: retirar, identificar y pedir ayuda especializada.',
+    bad: 'No se provoca el vómito ni se dan líquidos salvo indicación profesional.'
+  }
+};
+
+// ══════════════════════════════════════════════════════
+// GENERADORES DE ESCENAS SVG
+// ══════════════════════════════════════════════════════
+function renderEducator(x, y, pose, label) {
+  const kneel = pose === 'kneel';
+  const reach = pose === 'reach';
+  const bodyY = y + (kneel ? 28 : 0);
+  const armLeft = reach ? `<line x1="${x-14}" y1="${bodyY+38}" x2="${x-64}" y2="${bodyY+58}" stroke="#76c7ef" stroke-width="9" stroke-linecap="round"/>` : `<line x1="${x-12}" y1="${bodyY+40}" x2="${x-40}" y2="${bodyY+70}" stroke="#76c7ef" stroke-width="9" stroke-linecap="round"/>`;
+  const armRight = reach ? `<line x1="${x+14}" y1="${bodyY+38}" x2="${x+58}" y2="${bodyY+52}" stroke="#76c7ef" stroke-width="9" stroke-linecap="round"/>` : `<line x1="${x+12}" y1="${bodyY+40}" x2="${x+36}" y2="${bodyY+70}" stroke="#76c7ef" stroke-width="9" stroke-linecap="round"/>`;
+  const legs = kneel ? `
+    <line x1="${x-12}" y1="${bodyY+88}" x2="${x-54}" y2="${bodyY+98}" stroke="#263a55" stroke-width="12" stroke-linecap="round"/>
+    <line x1="${x+10}" y1="${bodyY+88}" x2="${x+48}" y2="${bodyY+112}" stroke="#263a55" stroke-width="12" stroke-linecap="round"/>
+  ` : `
+    <line x1="${x-10}" y1="${bodyY+88}" x2="${x-28}" y2="${bodyY+135}" stroke="#263a55" stroke-width="12" stroke-linecap="round"/>
+    <line x1="${x+10}" y1="${bodyY+88}" x2="${x+26}" y2="${bodyY+135}" stroke="#263a55" stroke-width="12" stroke-linecap="round"/>
+  `;
+  return `
+    <g opacity="0.98">
+      <ellipse cx="${x}" cy="${bodyY+130}" rx="66" ry="13" fill="rgba(0,0,0,.22)"/>
+      <circle cx="${x}" cy="${bodyY+18}" r="19" fill="#f2c8a5"/>
+      <path d="M${x-18} ${bodyY+12} q18 -24 39 0 v9 q-18 -13 -39 -1z" fill="#4a2f25"/>
+      <rect x="${x-24}" y="${bodyY+36}" width="48" height="56" rx="13" fill="#1f8ab8"/>
+      <rect x="${x-19}" y="${bodyY+44}" width="38" height="15" rx="4" fill="#d9f7ff" opacity=".9"/>
+      ${armLeft}${armRight}${legs}
+      <text x="${x}" y="${bodyY+64}" text-anchor="middle" fill="#0b2130" font-size="11" font-family="sans-serif" font-weight="bold">DOCENTE</text>
+      ${label ? `<text x="${x}" y="${bodyY-12}" text-anchor="middle" fill="#dce8f5" font-size="12" font-family="sans-serif">${label}</text>` : ''}
+    </g>`;
+}
+
+function renderSceneSiesta(age) {
+  return `<svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2535"/><stop offset="100%" stop-color="#111820"/></linearGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0e1828"/><stop offset="100%" stop-color="#1a2535"/></linearGradient>
+    <linearGradient id="light" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="#ffd878" stop-opacity="0.15"/><stop offset="100%" stop-color="transparent"/></linearGradient>
+  </defs>
+  <rect width="800" height="260" fill="url(#wall)"/>
+  <rect y="190" width="800" height="70" fill="#0d1520"/>
+  <ellipse cx="400" cy="192" rx="340" ry="30" fill="url(#light)" opacity="0.5"/>
+  <!-- ventana -->
+  <rect x="600" y="30" width="120" height="90" rx="4" fill="#0a2040" stroke="#1e3a5f" stroke-width="1.5"/>
+  <line x1="660" y1="30" x2="660" y2="120" stroke="#1e3a5f" stroke-width="1"/>
+  <line x1="600" y1="75" x2="720" y2="75" stroke="#1e3a5f" stroke-width="1"/>
+  <rect x="600" y="30" width="120" height="90" rx="4" fill="#c8f0ff" opacity="0.04"/>
+  <!-- cuna/colchoneta -->
+  <rect x="180" y="155" width="440" height="55" rx="8" fill="#1a3050" stroke="#2a4570" stroke-width="1.5"/>
+  <rect x="192" y="163" width="416" height="40" rx="5" fill="#1e3860"/>
+  <!-- almohada -->
+  <ellipse cx="290" cy="168" rx="70" ry="12" fill="#2a4878" opacity="0.8"/>
+  <!-- bebé/niño tumbado -->
+  ${age === 'lactante' ? `
+  <ellipse cx="320" cy="178" rx="20" ry="18" fill="#e8c5a0"/>
+  <circle cx="320" cy="173" r="14" fill="#f0d0b0"/>
+  <rect x="295" y="182" width="80" height="22" rx="6" fill="#3a6090" opacity="0.9"/>
+  <ellipse cx="338" cy="193" rx="20" ry="8" fill="#4a70a0" opacity="0.7"/>
+  <ellipse cx="300" cy="193" rx="18" ry="7" fill="#4a70a0" opacity="0.7"/>
+  ` : `
+  <ellipse cx="340" cy="177" rx="28" ry="22" fill="#e8c5a0"/>
+  <circle cx="340" cy="172" r="18" fill="#f0d0b0"/>
+  <rect x="295" y="182" width="100" height="24" rx="6" fill="#3a6090" opacity="0.9"/>
+  <ellipse cx="350" cy="196" rx="26" ry="9" fill="#4a70a0" opacity="0.7"/>
+  <ellipse cx="303" cy="196" rx="22" ry="8" fill="#4a70a0" opacity="0.7"/>
+  `}
+  ${renderEducator(535, 78, 'kneel', 'valora respuesta')}
+  <!-- alerta: no se mueve -->
+  <circle cx="680" cy="60" r="22" fill="rgba(255,60,60,0.15)" stroke="#ff4444" stroke-width="1.5"/>
+  <text x="680" y="67" text-anchor="middle" fill="#ff4444" font-size="20">⚠️</text>
+  <!-- luz tenue -->
+  <ellipse cx="400" cy="10" rx="80" ry="20" fill="#ffd878" opacity="0.06"/>
+  <rect x="380" y="0" width="40" height="8" rx="3" fill="#2a3a5a"/>
+</svg>`;
+}
+
+function renderSceneComedor(age, variant) {
+  const isAnafilaxia = variant === 'anafilaxia';
+  return `<svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <defs>
+    <linearGradient id="wall2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#111e2a"/><stop offset="100%" stop-color="#1a2a38"/></linearGradient>
+  </defs>
+  <rect width="800" height="260" fill="url(#wall2)"/>
+  <rect y="200" width="800" height="60" fill="#0d1820"/>
+  <!-- mesa comedor -->
+  <rect x="100" y="130" width="600" height="80" rx="6" fill="#1e3040" stroke="#2a4558" stroke-width="1.5"/>
+  <rect x="110" y="140" width="580" height="62" rx="4" fill="#243545"/>
+  <!-- platos y vasos en mesa -->
+  <ellipse cx="250" cy="171" rx="35" ry="8" fill="#2a4060" stroke="#3a5070" stroke-width="1"/>
+  <ellipse cx="550" cy="171" rx="35" ry="8" fill="#2a4060" stroke="#3a5070" stroke-width="1"/>
+  <rect x="465" y="148" width="12" height="30" rx="4" fill="#4a90c0" opacity="0.7"/>
+  <!-- niño sentado -->
+  ${age === 'lactante' ? `
+  <rect x="370" y="80" width="60" height="80" rx="8" fill="#3a6090"/>
+  <circle cx="400" cy="78" r="22" fill="#f0d0b0"/>
+  <ellipse cx="400" cy="98" rx="18" ry="8" fill="#e8c5a0"/>
+  ` : `
+  <rect x="360" y="70" width="80" height="90" rx="8" fill="#3a6090"/>
+  <circle cx="400" cy="68" r="28" fill="#f0d0b0"/>
+  <ellipse cx="400" cy="92" rx="22" ry="10" fill="#e8c5a0"/>
+  `}
+  <!-- señal de alerta -->
+  ${isAnafilaxia ? `
+  <ellipse cx="400" cy="115" rx="35" ry="12" fill="rgba(255,80,80,0.2)" stroke="#ff4444" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="400" y="60" text-anchor="middle" fill="#ff6060" font-size="13" font-family="sans-serif">RONCHAS · LABIOS HINCHADOS</text>
+  ` : `
+  <text x="400" y="55" text-anchor="middle" fill="#ff6060" font-size="13" font-family="sans-serif">NO RESPIRA · CIANOSIS</text>
+  <ellipse cx="400" cy="78" rx="38" ry="38" fill="none" stroke="#ff4444" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+  `}
+  ${renderEducator(560, 50, 'reach', isAnafilaxia ? 'prepara adrenalina' : 'golpes interescapulares')}
+  <!-- sillas -->
+  <rect x="130" y="115" width="50" height="70" rx="4" fill="#162535" stroke="#1e3040" stroke-width="1"/>
+  <rect x="620" y="115" width="50" height="70" rx="4" fill="#162535" stroke="#1e3040" stroke-width="1"/>
+</svg>`;
+}
+
+function renderSceneAula(age, variant) {
+  const colors = {
+    convulsion: { alert: '#ff4444', alertText: 'CRISIS CONVULSIVA', floor: '#1a2535' },
+    hipoglucemia: { alert: '#ffd740', alertText: 'HIPOGLUCEMIA', floor: '#1a2535' },
+    quemadura: { alert: '#ff9100', alertText: 'QUEMADURA', floor: '#1a2535' },
+    intoxicacion: { alert: '#b388ff', alertText: 'INTOXICACIÓN', floor: '#1a2535' },
+    pls: { alert: '#ff9100', alertText: 'INCONSCIENTE · RESPIRA', floor: '#1a2535' },
+  };
+  const c = colors[variant] || colors.pls;
+  return `<svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+  <rect width="800" height="260" fill="#111c2a"/>
+  <rect y="195" width="800" height="65" fill="#0d1620"/>
+  <!-- paredes aula -->
+  <rect x="0" y="0" width="800" height="195" fill="#111c2a"/>
+  <!-- pizarra -->
+  <rect x="50" y="20" width="280" height="120" rx="4" fill="#0d2a1f" stroke="#1a4030" stroke-width="1.5"/>
+  <text x="190" y="85" text-anchor="middle" fill="#2a6040" font-size="11" font-family="sans-serif">SVB · RCP · OVACE</text>
+  <!-- estantería -->
+  <rect x="680" y="20" width="100" height="170" rx="3" fill="#1a2a3a" stroke="#243040" stroke-width="1"/>
+  <rect x="685" y="60" width="90" height="4" fill="#2a3a4a"/>
+  <rect x="685" y="110" width="90" height="4" fill="#2a3a4a"/>
+  <rect x="685" y="160" width="90" height="4" fill="#2a3a4a"/>
+  <!-- suelo con niño -->
+  <ellipse cx="420" cy="197" rx="120" ry="18" fill="rgba(0,0,0,0.3)"/>
+  ${variant === 'convulsion' ? `
+  <!-- niño en convulsión -->
+  <rect x="360" y="158" width="120" height="45" rx="10" fill="#3a6090" transform="rotate(-5,420,180)"/>
+  <circle cx="375" cy="163" r="${age === 'lactante' ? 18 : 22}" fill="#f0d0b0" transform="rotate(-5,420,180)"/>
+  <line x1="350" y1="180" x2="310" y2="165" stroke="#4a80b0" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+  <line x1="480" y1="175" x2="510" y2="158" stroke="#4a80b0" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+  ${renderEducator(585, 75, 'kneel', 'protege la cabeza')}
+  ` : variant === 'pls' ? `
+  <!-- niño en PLS o tumbado -->
+  <rect x="340" y="165" width="140" height="38" rx="10" fill="#3a6090" transform="rotate(8,410,184)"/>
+  <circle cx="470" cy="172" r="${age === 'lactante' ? 18 : 22}" fill="#f0d0b0" transform="rotate(8,410,184)"/>
+  ${renderEducator(260, 80, 'kneel', 'vigila respiración')}
+  ` : `
+  <!-- niño de pie / sentado -->
+  <rect x="385" y="130" width="${age === 'lactante' ? 55 : 70}" height="${age === 'lactante' ? 72 : 88}" rx="8" fill="#3a6090"/>
+  <circle cx="420" cy="128" r="${age === 'lactante' ? 20 : 25}" fill="#f0d0b0"/>
+  ${renderEducator(555, 48, 'reach', variant === 'quemadura' ? 'enfría con agua' : variant === 'intoxicacion' ? 'retira el producto' : 'acompaña y valora')}
+  `}
+  <!-- alerta visual -->
+  <text x="420" y="40" text-anchor="middle" fill="${c.alert}" font-size="12" font-family="sans-serif" font-weight="bold" opacity="0.9">${c.alertText}</text>
+  <line x1="200" y1="44" x2="350" y2="44" stroke="${c.alert}" stroke-width="1" opacity="0.4"/>
+  <line x1="490" y1="44" x2="620" y2="44" stroke="${c.alert}" stroke-width="1" opacity="0.4"/>
+</svg>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ESTADO DE LA APP
+// ══════════════════════════════════════════════════════
+const App = {
+  scenario: null,
+  age: 'infantil',
+  profile: 'docente_ei',
+  apiKey: '',
+  examMode: false,
+  audioEnabled: true,
+  currentVariant: '',
+  step: 0,
+  score: 0,
+  activityScore: 0,
+  activityDone: false,
+  decisions: [],   // [{stepLabel, optionText, correct, criticalError, feedback, scoreImpact, time}]
+  timerInterval: null,
+  audioCtx: null,
+  audioNodes: [],
+  elapsed: 0,
+  ended: false,
+  conversationHistory: [],  // para contexto multi-turn con la API
+};
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildScenarioList();
+  document.getElementById('btn-start').addEventListener('click', startSim);
+  document.getElementById('btn-end').addEventListener('click', endSimConfirm);
+  document.getElementById('btn-repeat').addEventListener('click', repeatSim);
+  document.getElementById('btn-home2').addEventListener('click', goHome);
+  document.getElementById('btn-export').addEventListener('click', exportReport);
+  document.getElementById('btn-clear-key').addEventListener('click', clearSavedApiKey);
+  document.getElementById('btn-export-cache').addEventListener('click', exportOfflineCache);
+  document.getElementById('btn-audio').addEventListener('click', toggleAudio);
+  document.getElementById('exam-mode').addEventListener('change', e => { App.examMode = e.target.checked; });
+  document.getElementById('audio-mode').addEventListener('change', e => { App.audioEnabled = e.target.checked; });
+  document.querySelectorAll('[name="age"]').forEach(r => r.addEventListener('change', e => { App.age = e.target.value; }));
+  document.querySelectorAll('[name="profile"]').forEach(r => r.addEventListener('change', e => { App.profile = e.target.value; }));
+});
+
+function buildScenarioList() {
+  const list = document.getElementById('sc-list');
+  list.innerHTML = '';
+  SCENARIOS.forEach((sc, i) => {
+    const el = document.createElement('div');
+    el.className = 'sc-item' + (i === 0 ? ' sel' : '');
+    el.dataset.id = sc.id;
+    el.innerHTML = `
+      <span class="sc-num">${sc.index.toString().padStart(2,'0')}</span>
+      <span class="sc-ico">${sc.icon}</span>
+      <span class="sc-name">${sc.title}</span>
+      <span class="sc-sev sev-${sc.severity}">${sc.severity.toUpperCase()}</span>`;
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.sc-item').forEach(x => x.classList.remove('sel'));
+      el.classList.add('sel');
+      App.scenario = sc;
+    });
+    list.appendChild(el);
+  });
+  App.scenario = SCENARIOS[0];
+}
+
+// ══════════════════════════════════════════════════════
+// PANTALLAS
+// ══════════════════════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+function submitApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  const errEl = document.getElementById('key-error');
+  if (val.length < 10) {
+    errEl.textContent = 'La key parece demasiado corta (debe empezar por sk-or-v1-...)';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  App.apiKey = val;
+  saveApiKey(val);
+  showScreen('home');
+}
+
+// Permitir Enter en el input
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('api-key-input');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitApiKey(); });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = loadSavedApiKey();
+  if (getApiProxyUrl()) {
+    showScreen('home');
+    return;
+  }
+  if (saved) {
+    App.apiKey = saved;
+    const inp = document.getElementById('api-key-input');
+    if (inp) inp.value = saved;
+    showScreen('home');
+  }
+});
+
+// ══════════════════════════════════════════════════════
+// INICIO SIMULACIÓN
+// ══════════════════════════════════════════════════════
+function startSim() {
+  if (!App.scenario) { toast('Selecciona un escenario', 'warn'); return; }
+  App.examMode = document.getElementById('exam-mode')?.checked || false;
+  App.audioEnabled = document.getElementById('audio-mode')?.checked || false;
+  App.currentVariant = pickScenarioVariant(App.scenario.id);
+  App.step = 0;
+  App.score = 0;
+  App.activityScore = 0;
+  App.activityDone = false;
+  App.decisions = [];
+  App.elapsed = 0;
+  App.ended = false;
+  App.conversationHistory = [];
+
+  // Header
+  const sc = App.scenario;
+  document.getElementById('sim-title').textContent = sc.title;
+  const badgeEl = document.getElementById('sim-sev-badge');
+  badgeEl.textContent = sc.severity.toUpperCase();
+  badgeEl.className = 'sim-badge ' + sc.severity;
+  document.getElementById('sim-age-badge').textContent = App.age === 'lactante' ? '🍼 Lactante < 1 año' : '🧒 Niño/a 1-3 años';
+  document.getElementById('sim-mode-badge').textContent = App.examMode ? 'MODO EXAMEN' : 'ENTRENAMIENTO';
+
+  // Escena SVG
+  document.getElementById('scene-svg').outerHTML = sc.svgScene(App.age);
+  // Reasignamos porque outerHTML reemplaza el nodo
+  document.querySelector('.scene-img-wrap svg').id = 'scene-svg';
+  updateScenePhoto(sc.id);
+
+  document.getElementById('scene-location').innerHTML = `📍 ${sc.icon} ${sc.location}`;
+  updateSceneStatusTag(sc.severity);
+
+  // Estado inicial paciente
+  updatePatient(sc.initialPatient);
+
+  // Log limpio
+  document.getElementById('log-feed').innerHTML = '';
+  document.getElementById('step-score').textContent = '0 pts';
+  document.getElementById('step-bar').style.width = '0%';
+  document.getElementById('step-num').textContent = `0/${sc.totalSteps}`;
+  document.getElementById('timer').className = 'timer' + (App.examMode ? ' exam' : '');
+  if (App.examMode) hidePracticeActivity();
+  else renderPracticeActivity();
+
+  showScreen('sim');
+  startTimer();
+  if (App.audioEnabled) startAmbientAudio(sc.id);
+  else stopAmbientAudio();
+
+  // Primera llamada a la IA
+  callAI_firstStep();
+}
+
+// ══════════════════════════════════════════════════════
+// CRONÓMETRO
+// ══════════════════════════════════════════════════════
+function startTimer() {
+  clearInterval(App.timerInterval);
+  App.timerInterval = setInterval(() => {
+    App.elapsed++;
+    const shown = App.examMode ? Math.max(0, EXAM_TIME_LIMIT - App.elapsed) : App.elapsed;
+    const m = String(Math.floor(shown/60)).padStart(2,'0');
+    const s = String(shown%60).padStart(2,'0');
+    const el = document.getElementById('timer');
+    el.textContent = `${m}:${s}`;
+    if ((App.examMode && shown <= 60) || (!App.examMode && App.elapsed > 300)) el.classList.add('hot');
+    if (App.examMode && shown <= 0) {
+      toast('Tiempo agotado en modo examen', 'warn');
+      endSim();
+    }
+  }, 1000);
+}
+function stopTimer() { clearInterval(App.timerInterval); }
+
+// ══════════════════════════════════════════════════════
+// LLAMADA A LA API — PRIMER PASO
+// ══════════════════════════════════════════════════════
+function callAI_firstStep() {
+  setOptionsLoading();
+  setNarrative('...', true);
+
+  const sc = App.scenario;
+  const systemPrompt = sc.systemPrompt(App.age, App.profile);
+
+  const userMessage = `Paso 1/${sc.totalSteps}. Presenta la escena inicial con detalle inmersivo y genera 4 opciones de acción para el alumno. Una debe ser la correcta según el protocolo, las otras plausibles pero incorrectas o subóptimas. Incluye una opción que sea un error crítico (critical_error:true). El alumno aún no ha hecho nada.
+
+VARIANTE DEL CASO: ${App.currentVariant}
+MODO: ${App.examMode ? 'EXAMEN: opciones más exigentes, sin pistas obvias, feedback breve y puntuación estricta.' : 'ENTRENAMIENTO: opciones formativas con feedback útil.'}`;
+
+  App.conversationHistory = [{ role: 'user', content: userMessage }];
+
+  fetchAI(systemPrompt, App.conversationHistory)
+    .then(data => handleAIResponse(data))
+    .catch(err => handleAIError(err));
+}
+
+// ══════════════════════════════════════════════════════
+// LLAMADA A LA API — SIGUIENTE PASO tras decisión
+// ══════════════════════════════════════════════════════
+function callAI_nextStep(chosenOption) {
+  setOptionsLoading();
+  setNarrative('...', true);
+
+  const sc = App.scenario;
+  App.step++;
+
+  const nextMsg = `El alumno ha elegido: "${chosenOption.text}".
+${chosenOption.correct ? 'Acción CORRECTA.' : chosenOption.critical_error ? 'ERROR CRÍTICO.' : 'Acción INCORRECTA o SUBÓPTIMA.'}
+
+Paso ${App.step + 1}/${sc.totalSteps}. Evoluciona la escena en consecuencia de forma inmersiva. Mantén esta variante del caso: ${App.currentVariant}. Presenta el siguiente momento del escenario con 4 nuevas opciones. ${App.examMode ? 'Modo examen: evita pistas obvias y sé más estricto con acciones incompletas.' : 'Modo entrenamiento: incluye feedback docente útil.'} ${App.step + 1 >= sc.totalSteps ? 'Este es el último paso. Una de las opciones debe ser el cierre correcto del escenario.' : ''}`;
+
+  App.conversationHistory.push({ role: 'assistant', content: App.lastAIRaw });
+  App.conversationHistory.push({ role: 'user', content: nextMsg });
+
+  fetchAI(sc.systemPrompt(App.age, App.profile), App.conversationHistory)
+    .then(data => handleAIResponse(data))
+    .catch(err => handleAIError(err));
+}
+
+// ══════════════════════════════════════════════════════
+// FETCH A LA API
+// ══════════════════════════════════════════════════════
+async function fetchAI(systemPrompt, messages) {
+  const apiKey = App.apiKey || loadSavedApiKey();
+  const proxyUrl = getApiProxyUrl();
+  const cached = getScenarioCache();
+
+  if (!proxyUrl && !apiKey) {
+    if (cached) return { content: [{ type: 'text', text: JSON.stringify(cached) }] };
+    throw new Error('No hay API configurada y este paso no está en cache offline.');
+  }
+
+  const body = {
+    model: 'openrouter/auto',
+    route: 'fallback',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ],
+    max_tokens: 1200,
+    temperature: 0.7,
+  };
+
+  const headers = proxyUrl ? {
+    'Content-Type': 'application/json'
+  } : {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + apiKey,
+    'HTTP-Referer': location.origin || 'https://simulador-svb.local',
+    'X-Title': 'Simulador SVB Pediátrico',
+  };
+
+  const response = await fetch(proxyUrl || 'https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    if (cached) return { content: [{ type: 'text', text: JSON.stringify(cached) }] };
+    const errText = await response.text();
+    let msg = 'Error ' + response.status;
+    try {
+      const j = JSON.parse(errText);
+      msg += ': ' + (j.error?.message || errText);
+    } catch(e) { msg += ': ' + errText; }
+    throw new Error(msg);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) {
+    if (cached) return { content: [{ type: 'text', text: JSON.stringify(cached) }] };
+    throw new Error('Respuesta vacía de OpenRouter');
+  }
+
+  return { content: [{ type: 'text', text }] };
+}
+
+// ══════════════════════════════════════════════════════
+// PROCESAR RESPUESTA DE LA IA
+// ══════════════════════════════════════════════════════
+function handleAIResponse(data) {
+  const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+  App.lastAIRaw = raw;
+
+  let parsed;
+  try {
+    // Limpiar markdown y extraer JSON
+    let clean = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+    // Buscar el primer { y el último } para extraer solo el JSON
+    const start = clean.indexOf('{');
+    const end = clean.lastIndexOf('}');
+    if (start !== -1 && end !== -1) clean = clean.slice(start, end + 1);
+    parsed = JSON.parse(clean);
+  } catch(e) {
+    console.error('Parse error, raw:', raw.substring(0, 300));
+    handleAIError('La IA no devolvió JSON válido. Reintenta.');
+    return;
+  }
+
+  saveScenarioCache(parsed);
+
+  // Actualizar narrativa
+  setNarrative(parsed.narrative || '—', false);
+
+  // Actualizar estado paciente si viene
+  if (parsed.patientState) updatePatient(parsed.patientState);
+
+  // Actualizar progreso
+  const sc = App.scenario;
+  document.getElementById('step-num').textContent = `${App.step + 1}/${sc.totalSteps}`;
+  document.getElementById('step-bar').style.width = `${((App.step + 1) / sc.totalSteps) * 100}%`;
+  document.getElementById('step-score').textContent = `${App.score} pts`;
+
+  // Renderizar opciones
+  renderOptions(parsed.options || [], parsed.stepLabel || `Paso ${App.step + 1}`);
+
+  // Guardar stepLabel para el log
+  App.currentStepLabel = parsed.stepLabel || `Paso ${App.step + 1}`;
+}
+
+function handleAIError(err) {
+  console.error('AI Error:', err);
+  const msg = err?.message || String(err);
+  const cached = getScenarioCache();
+  if (cached) {
+    toast('Usando respuesta guardada sin conexión', 'warn');
+    handleAIResponse({ content: [{ type: 'text', text: JSON.stringify(cached) }] });
+    return;
+  }
+  setNarrative('⚠️ ' + msg, false);
+  document.getElementById('options-grid').innerHTML = `
+    <div style="color:var(--red);font-size:0.78rem;padding:14px;background:rgba(255,68,68,.07);border-radius:6px;border:1px solid rgba(255,68,68,.2);line-height:1.6">
+      <strong>Error:</strong> ${msg.replace(/</g,'&lt;').replace(/>/g,'&gt;')}<br><br>
+      <button onclick="retryLastStep()" style="background:rgba(0,212,255,.1);color:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:6px 14px;cursor:pointer;font-size:0.78rem">🔄 Reintentar</button>
+      &nbsp;
+      <button onclick="goHome()" style="background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:5px;padding:6px 14px;cursor:pointer;font-size:0.78rem">🏠 Inicio</button>
+    </div>`;
+}
+
+App.lastAIRaw = '';
+App.currentStepLabel = '';
+
+function retryLastStep() {
+  if (App.step === 0) callAI_firstStep();
+  else {
+    // Reintentar el último paso
+    setOptionsLoading();
+    fetchAI(App.scenario.systemPrompt(App.age, App.profile), App.conversationHistory)
+      .then(d => handleAIResponse(d))
+      .catch(e => handleAIError(e));
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// VARIANTES Y AUDIO
+// ══════════════════════════════════════════════════════
+function pickScenarioVariant(scenarioId) {
+  const variants = SCENARIO_VARIANTS[scenarioId] || [];
+  if (!variants.length) return 'Caso estándar sin variación adicional.';
+  return variants[Math.floor(Math.random() * variants.length)];
+}
+
+function startAmbientAudio(scenarioId) {
+  stopAmbientAudio();
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const master = ctx.createGain();
+    master.gain.value = 0.045;
+    master.connect(ctx.destination);
+
+    const base = ctx.createOscillator();
+    const baseGain = ctx.createGain();
+    base.type = 'sine';
+    base.frequency.value = scenarioId === 'siesta-pcr' || scenarioId === 'pls' ? 165 : scenarioId === 'ovace-comedor' ? 230 : 205;
+    baseGain.gain.value = 0.12;
+    base.connect(baseGain);
+    baseGain.connect(master);
+    base.start();
+
+    const pulse = ctx.createOscillator();
+    const pulseGain = ctx.createGain();
+    pulse.type = 'triangle';
+    pulse.frequency.value = App.examMode ? 3.2 : 1.7;
+    pulseGain.gain.value = App.scenario?.severity === 'critica' ? 0.055 : 0.035;
+    pulse.connect(pulseGain);
+    pulseGain.connect(master);
+    pulse.start();
+
+    App.audioCtx = ctx;
+    App.audioNodes = [base, pulse, master];
+    updateAudioButton(true);
+  } catch(e) {
+    App.audioEnabled = false;
+    updateAudioButton(false);
+  }
+}
+
+function stopAmbientAudio() {
+  App.audioNodes.forEach(node => {
+    try { if (node.stop) node.stop(); } catch(e) {}
+    try { if (node.disconnect) node.disconnect(); } catch(e) {}
+  });
+  App.audioNodes = [];
+  if (App.audioCtx) {
+    try { App.audioCtx.close(); } catch(e) {}
+  }
+  App.audioCtx = null;
+  updateAudioButton(false);
+}
+
+function toggleAudio() {
+  App.audioEnabled = !App.audioEnabled;
+  const homeToggle = document.getElementById('audio-mode');
+  if (homeToggle) homeToggle.checked = App.audioEnabled;
+  if (App.audioEnabled && !App.ended && document.getElementById('screen-sim').classList.contains('active')) startAmbientAudio(App.scenario.id);
+  else stopAmbientAudio();
+}
+
+function updateAudioButton(active) {
+  const btn = document.getElementById('btn-audio');
+  if (!btn) return;
+  btn.textContent = active ? 'Audio ON' : 'Audio OFF';
+  btn.style.opacity = active ? '1' : '.65';
+}
+
+// ══════════════════════════════════════════════════════
+// ACTIVIDADES INTERACTIVAS
+// ══════════════════════════════════════════════════════
+function renderPracticeActivity() {
+  const activity = PRACTICE_ACTIVITIES[App.scenario.id];
+  const panel = document.getElementById('activity-panel');
+  if (!activity) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  App.activityDone = false;
+  document.getElementById('activity-title').textContent = activity.title;
+  document.getElementById('activity-prompt').textContent = activity.prompt;
+  document.getElementById('activity-score').textContent = `+${App.activityScore} práctica`;
+
+  if (activity.type === 'sequence') renderSequenceActivity(activity);
+  if (activity.type === 'checklist') renderChecklistActivity(activity);
+  if (activity.type === 'selector') renderSelectorActivity(activity);
+  if (activity.type === 'hotspot') renderHotspotActivity(activity);
+  if (activity.type === 'counter') renderCounterActivity(activity);
+}
+
+function hidePracticeActivity() {
+  const panel = document.getElementById('activity-panel');
+  if (panel) panel.style.display = 'none';
+}
+
+function renderSequenceActivity(activity) {
+  const body = document.getElementById('activity-body');
+  const selected = [];
+  body.innerHTML = activity.items.map(item => `
+    <button class="activity-step" data-id="${item.id}">
+      <span class="activity-step-order">·</span><span>${item.text}</span>
+    </button>`).join('') + activityCheckButton() + activityFeedback();
+
+  body.querySelectorAll('.activity-step').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (App.activityDone || btn.classList.contains('picked')) return;
+      selected.push(btn.dataset.id);
+      btn.classList.add('picked');
+      btn.querySelector('.activity-step-order').textContent = selected.length;
+    });
+  });
+  body.querySelector('.activity-check').addEventListener('click', () => {
+    const ok = selected.join('|') === activity.answer.join('|');
+    completeActivity(ok, activity);
+  });
+}
+
+function renderChecklistActivity(activity) {
+  const body = document.getElementById('activity-body');
+  body.innerHTML = activity.options.map(opt => `<button class="activity-chip" data-id="${opt.id}">${opt.text}</button>`).join('') + activityCheckButton() + activityFeedback();
+  body.querySelectorAll('.activity-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (App.activityDone) return;
+      btn.classList.toggle('picked');
+    });
+  });
+  body.querySelector('.activity-check').addEventListener('click', () => {
+    const picked = [...body.querySelectorAll('.activity-chip.picked')].map(x => x.dataset.id).sort();
+    const answer = [...activity.answer].sort();
+    completeActivity(picked.join('|') === answer.join('|'), activity);
+  });
+}
+
+function renderSelectorActivity(activity) {
+  const body = document.getElementById('activity-body');
+  body.innerHTML = activity.options.map(opt => `<button class="activity-chip" data-id="${opt.id}">${opt.text}</button>`).join('') + activityFeedback();
+  body.querySelectorAll('.activity-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (App.activityDone) return;
+      body.querySelectorAll('.activity-chip').forEach(x => x.classList.remove('picked'));
+      btn.classList.add('picked');
+      const expected = activity.answerByAge ? activity.answerByAge[App.age] : activity.answer;
+      completeActivity(btn.dataset.id === expected, activity);
+    });
+  });
+}
+
+function renderHotspotActivity(activity) {
+  const body = document.getElementById('activity-body');
+  body.innerHTML = activity.options.map(opt => `<button class="activity-hotspot" data-id="${opt.id}">${opt.text}</button>`).join('') + activityFeedback();
+  body.querySelectorAll('.activity-hotspot').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (App.activityDone) return;
+      body.querySelectorAll('.activity-hotspot').forEach(x => x.classList.remove('picked'));
+      btn.classList.add('picked');
+      completeActivity(btn.dataset.id === activity.answer, activity);
+    });
+  });
+}
+
+function renderCounterActivity(activity) {
+  const body = document.getElementById('activity-body');
+  let value = activity.start ?? 0;
+  body.innerHTML = `
+    <div class="activity-meter">
+      <button type="button" data-dir="-1">−</button>
+      <span id="activity-count">${value} ${activity.unit || ''}</span>
+      <button type="button" data-dir="1">+</button>
+    </div>
+    ${activityCheckButton()}${activityFeedback()}`;
+  body.querySelectorAll('.activity-meter button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (App.activityDone) return;
+      value = Math.max(activity.min, Math.min(activity.max, value + Number(btn.dataset.dir)));
+      document.getElementById('activity-count').textContent = `${value} ${activity.unit || ''}`;
+    });
+  });
+  body.querySelector('.activity-check').addEventListener('click', () => {
+    completeActivity(value >= activity.answerMin && value <= activity.answerMax, activity);
+  });
+}
+
+function activityCheckButton() {
+  return '<button class="activity-check" type="button">Comprobar</button>';
+}
+
+function activityFeedback() {
+  return '<div class="activity-feedback" id="activity-feedback"></div>';
+}
+
+function completeActivity(ok, activity) {
+  const feedback = document.getElementById('activity-feedback');
+  if (!feedback || App.activityDone) return;
+  App.activityDone = true;
+  feedback.textContent = ok ? activity.ok : activity.bad;
+  feedback.className = `activity-feedback ${ok ? 'good' : 'bad'}`;
+  document.querySelectorAll('#activity-body button').forEach(btn => btn.disabled = true);
+  if (ok) {
+    App.activityScore += 5;
+    App.score = Math.min(100, App.score + 5);
+    document.getElementById('activity-score').textContent = `+${App.activityScore} práctica`;
+    document.getElementById('step-score').textContent = `${App.score} pts`;
+    addLogEntry({
+      stepLabel: 'Actividad práctica',
+      decision: activity.title,
+      result: activity.ok,
+      type: 'ok',
+      scoreImpact: 5,
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER OPCIONES
+// ══════════════════════════════════════════════════════
+const LETTERS = ['A','B','C','D','E'];
+
+function renderOptions(options, stepLabel) {
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+
+  // Mezclar opciones aleatoriamente
+  const shuffled = [...options].sort(() => Math.random() - 0.5);
+
+  shuffled.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span><span class="opt-text">${opt.text}</span>`;
+    btn.addEventListener('click', () => chooseOption(opt, stepLabel, btn, grid));
+    grid.appendChild(btn);
+  });
+}
+
+function chooseOption(opt, stepLabel, clickedBtn, grid) {
+  if (App.ended) return;
+
+  // Deshabilitar todos los botones
+  grid.querySelectorAll('.opt-btn').forEach(b => {
+    b.disabled = true;
+    b.classList.add('selected');
+  });
+  clickedBtn.classList.add('selected');
+
+  // Calcular score
+  const impact = opt.scoreImpact || (opt.correct ? 15 : opt.critical_error ? -25 : -8);
+  App.score = Math.max(0, Math.min(100, App.score + impact));
+  document.getElementById('step-score').textContent = `${App.score} pts`;
+
+  // Registrar decisión
+  App.decisions.push({
+    stepLabel: stepLabel,
+    optionText: opt.text,
+    correct: opt.correct,
+    criticalError: opt.critical_error || false,
+    feedback: opt.feedback || '',
+    scoreImpact: impact,
+    time: App.elapsed,
+  });
+
+  // Añadir al log
+  addLogEntry({
+    stepLabel,
+    decision: opt.text,
+    result: opt.feedback || (opt.correct ? 'Correcto' : opt.critical_error ? 'Error crítico' : 'Incorrecto'),
+    type: opt.correct ? 'ok' : opt.critical_error ? 'error' : 'warn',
+    scoreImpact: impact,
+  });
+
+  // ¿Es el último paso?
+  const sc = App.scenario;
+  if (App.step + 1 >= sc.totalSteps) {
+    setTimeout(() => endSim(), 800);
+  } else {
+    setTimeout(() => callAI_nextStep(opt), 400);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS UI
+// ══════════════════════════════════════════════════════
+function setOptionsLoading() {
+  document.getElementById('options-grid').innerHTML = `
+    <div class="opt-loading">
+      <span>Generando situación</span>
+      <span class="dots"><span>.</span><span>.</span><span>.</span></span>
+    </div>`;
+}
+
+function setNarrative(text, loading) {
+  const el = document.getElementById('narrative-text');
+  el.textContent = text;
+  el.className = 'narrative-text' + (loading ? ' typing' : '');
+}
+
+function updatePatient(state) {
+  const map = {
+    'pt-consc': state.consc,
+    'pt-resp': state.resp,
+    'pt-color': state.color,
+    'pt-risk': state.risk,
+  };
+  Object.entries(map).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (!el || !val) return;
+    el.textContent = val;
+    const v = val.toLowerCase();
+    if (v.includes('🔴') || v.includes('ausente') || v.includes('inconsciente') || v.includes('cianótic') || v.includes('critico')) el.className = 'pt-cell-val val-crit';
+    else if (v.includes('🟠') || v.includes('dificultosa') || v.includes('irregular') || v.includes('urgente') || v.includes('pálid')) el.className = 'pt-cell-val val-warn';
+    else if (v.includes('🟢') || v.includes('normal') || v.includes('estable') || v.includes('consciente')) el.className = 'pt-cell-val val-ok';
+    else el.className = 'pt-cell-val val-neutral';
+  });
+}
+
+function updateScenePhoto(scenarioId) {
+  const img = document.getElementById('scene-photo');
+  const bg = document.getElementById('scene-photo-bg');
+  const src = SCENE_PHOTO_SRC[scenarioId] || SCENE_PHOTO_SRC['siesta-pcr'];
+  if (img) {
+    img.src = src;
+    img.alt = `Escena realista del escenario ${App.scenario?.title || ''}`;
+  }
+  if (bg) bg.style.setProperty('--scene-photo', `url('${src}')`);
+}
+
+function updateSceneStatusTag(severity) {
+  const el = document.getElementById('scene-status-tag');
+  const map = {
+    critica: { text: '🔴 CRÍTICO', cls: 'sev-critica', style: 'background:rgba(255,68,68,.2);color:#ff6060;border:1px solid rgba(255,68,68,.3)' },
+    urgente: { text: '🟠 URGENTE', cls: 'sev-urgente', style: 'background:rgba(255,145,0,.2);color:#ffa030;border:1px solid rgba(255,145,0,.3)' },
+    moderada: { text: '🟡 MODERADO', cls: 'sev-moderada', style: 'background:rgba(255,215,64,.2);color:#ffd740;border:1px solid rgba(255,215,64,.3)' },
+  };
+  const m = map[severity] || map.urgente;
+  el.textContent = m.text;
+  el.style.cssText = m.style;
+}
+
+function addLogEntry(entry) {
+  const feed = document.getElementById('log-feed');
+  const div = document.createElement('div');
+  div.className = `log-entry le-${entry.type}`;
+  const sign = entry.scoreImpact >= 0 ? '+' : '';
+  div.innerHTML = `
+    <div class="log-step"><span>${entry.stepLabel}</span><span style="font-family:var(--font-m);font-size:0.65rem;color:${entry.type==='ok'?'var(--green)':entry.type==='error'?'var(--red)':'var(--yellow)'}">${sign}${entry.scoreImpact}</span></div>
+    <div class="log-decision">${entry.decision}</div>
+    <div class="log-result">${entry.result}</div>`;
+  feed.insertBefore(div, feed.firstChild);
+}
+
+// ══════════════════════════════════════════════════════
+// FIN DE SIMULACIÓN
+// ══════════════════════════════════════════════════════
+function endSimConfirm() {
+  if (confirm('¿Finalizar la evaluación ahora?')) endSim();
+}
+
+function endSim() {
+  if (App.ended) return;
+  App.ended = true;
+  stopTimer();
+  stopAmbientAudio();
+  setTimeout(() => renderDebrief(), 300);
+}
+
+// ══════════════════════════════════════════════════════
+// DEBRIEFING
+// ══════════════════════════════════════════════════════
+function renderDebrief() {
+  const sc = App.scenario;
+  const correct = App.decisions.filter(d => d.correct).length;
+  const critical = App.decisions.filter(d => d.criticalError).length;
+  const total = App.decisions.length;
+  const examPenalty = App.examMode && App.elapsed > 360 ? 5 : 0;
+  const score = Math.max(0, App.score - examPenalty);
+  App.finalScore = score;
+
+  // Resultado
+  let resultText, resultClass, subtitle;
+  if (critical > 0 && score < 50) {
+    resultText = 'NO APTO'; resultClass = 'fail';
+    subtitle = `${critical} error(es) crítico(s) cometido(s)`;
+  } else if (critical > 0) {
+    resultText = 'APTO CON ERRORES CRÍTICOS'; resultClass = 'obs';
+    subtitle = 'Revisar los errores críticos antes de practicar';
+  } else if (score >= 80) {
+    resultText = 'APTO'; resultClass = 'pass';
+    subtitle = 'Protocolo aplicado correctamente';
+  } else if (score >= 60) {
+    resultText = 'APTO CON OBSERVACIONES'; resultClass = 'obs';
+    subtitle = 'Hay pasos a mejorar';
+  } else {
+    resultText = 'NO APTO'; resultClass = 'fail';
+    subtitle = 'Necesita refuerzo del protocolo';
+  }
+
+  document.getElementById('db-result').textContent = resultText;
+  document.getElementById('db-result').className = `db-result ${resultClass}`;
+  document.getElementById('db-subtitle').textContent = subtitle;
+  document.getElementById('db-score').textContent = score;
+  document.getElementById('db-time').textContent = `${Math.floor(App.elapsed/60)}m ${App.elapsed%60}s`;
+  document.getElementById('db-correct').textContent = correct;
+  document.getElementById('db-errors').textContent = critical;
+  document.getElementById('cert-scenario').textContent = sc.title;
+  document.getElementById('cert-mode').textContent = App.examMode ? 'Modo examen' : 'Entrenamiento';
+  document.getElementById('cert-variant').textContent = App.currentVariant || 'Caso estándar';
+  document.getElementById('cert-result').textContent = `${resultText} · ${score} pts`;
+
+  // Timeline
+  const tl = document.getElementById('db-timeline');
+  tl.innerHTML = App.decisions.map(d => `
+    <div class="tl-item">
+      <div class="tl-dot">
+        <div class="tl-circle ${d.correct ? 'ok' : d.criticalError ? 'error' : 'warn'}"></div>
+        <div class="tl-line"></div>
+      </div>
+      <div class="tl-content">
+        <div class="tl-step-label">${d.stepLabel}</div>
+        <div class="tl-decision">${d.optionText}</div>
+        <div class="tl-feedback">${d.feedback || '—'}</div>
+        <div class="tl-score ${d.scoreImpact >= 0 ? 'pos' : 'neg'}">${d.scoreImpact >= 0 ? '+' : ''}${d.scoreImpact} pts</div>
+      </div>
+    </div>`).join('');
+
+  // Preguntas debriefing
+  document.getElementById('db-questions').innerHTML = (sc.debriefingPoints || []).map((q, i) => `
+    <div class="db-q"><span class="db-q-num">${i+1}</span><span>${q}</span></div>`).join('');
+
+  // Referencias
+  document.getElementById('db-refs').innerHTML = (sc.refs || []).map(id => {
+    const r = REFS_DATA[id]; if (!r) return '';
+    return `<div class="ref-item"><strong>${r.title}</strong><span>${r.source} · ${r.year || ''}</span><span class="ref-ok">validado</span></div>`;
+  }).join('');
+
+  showScreen('debrief');
+}
+
+// ══════════════════════════════════════════════════════
+// REPETIR / INICIO / EXPORTAR
+// ══════════════════════════════════════════════════════
+function repeatSim() { startSim(); }
+function goHome() { stopAmbientAudio(); showScreen('home'); }
+
+function exportReport() {
+  exportCertificatePdf();
+}
+
+function exportCertificatePdf() {
+  const report = {
+    fecha: new Date().toLocaleString('es-ES'),
+    escenario: App.scenario.title,
+    variante: App.currentVariant,
+    modo: App.examMode ? 'Modo examen' : 'Entrenamiento',
+    edad: App.age,
+    perfil: PROFILE_LABELS[App.profile] || App.profile,
+    tiempo: `${Math.floor(App.elapsed/60)}m ${App.elapsed%60}s`,
+    puntuacion: App.finalScore ?? App.score,
+    decisiones: App.decisions,
+    referencias: App.scenario.refs
+  };
+  const rows = report.decisiones.map((d, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${escapeHtml(d.stepLabel)}</td>
+      <td>${escapeHtml(d.optionText)}</td>
+      <td>${d.correct ? 'Correcta' : d.criticalError ? 'Error crítico' : 'Mejorable'}</td>
+      <td>${d.scoreImpact >= 0 ? '+' : ''}${d.scoreImpact}</td>
+    </tr>`).join('');
+  const cert = `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>Certificado SVB Pediátrico</title>
+<style>
+body{font-family:Arial,sans-serif;color:#172033;margin:36px;line-height:1.45}
+.head{border-bottom:3px solid #0099cc;padding-bottom:18px;margin-bottom:24px}
+h1{font-size:30px;margin:0;color:#0b5f86}.subtitle{color:#4f647a;margin-top:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0}
+.box{border:1px solid #cad7e5;border-radius:8px;padding:12px;background:#f7fbff}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#61758a}.value{font-weight:700;margin-top:4px}
+.score{font-size:44px;color:#008a4a;font-weight:800}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:12px}th,td{border:1px solid #d8e2ed;padding:8px;text-align:left;vertical-align:top}th{background:#eef6fb}
+.refs{font-size:12px;color:#52687c;margin-top:18px}.foot{margin-top:28px;font-size:11px;color:#73869a}
+@media print{body{margin:24px}.no-print{display:none}}
+</style></head><body>
+<div class="head"><h1>Certificado de simulación SVB Pediátrico</h1><div class="subtitle">Escuela Infantil · Registro formativo generado automáticamente</div></div>
+<div class="grid">
+  <div class="box"><div class="label">Escenario</div><div class="value">${escapeHtml(report.escenario)}</div></div>
+  <div class="box"><div class="label">Modo</div><div class="value">${escapeHtml(report.modo)}</div></div>
+  <div class="box"><div class="label">Variante</div><div class="value">${escapeHtml(report.variante || 'Caso estándar')}</div></div>
+  <div class="box"><div class="label">Perfil / Edad</div><div class="value">${escapeHtml(report.perfil)} · ${escapeHtml(report.edad)}</div></div>
+  <div class="box"><div class="label">Tiempo</div><div class="value">${escapeHtml(report.tiempo)}</div></div>
+  <div class="box"><div class="label">Puntuación</div><div class="score">${report.puntuacion}</div></div>
+</div>
+<h2>Registro de decisiones</h2>
+<table><thead><tr><th>#</th><th>Momento</th><th>Decisión</th><th>Evaluación</th><th>Puntos</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Sin decisiones registradas</td></tr>'}</tbody></table>
+<div class="refs"><strong>Referencias:</strong> ${escapeHtml((report.referencias || []).join(', '))}</div>
+<div class="foot">Fecha: ${escapeHtml(report.fecha)}. Herramienta formativa; seguir siempre protocolos del centro y servicios de emergencia.</div>
+<button class="no-print" onclick="window.print()" style="margin-top:20px;padding:10px 16px">Guardar como PDF</button>
+<script>setTimeout(() => window.print(), 350);<\/script>
+</body></html>`;
+  const win = window.open('', '_blank');
+  if (!win) {
+    toast('Permite ventanas emergentes para generar el certificado PDF', 'warn');
+    return;
+  }
+  win.document.open();
+  win.document.write(cert);
+  win.document.close();
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show`;
+  if (type === 'warn') el.style.borderColor = 'var(--yellow)';
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
